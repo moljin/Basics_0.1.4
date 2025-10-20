@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}
+    게시글 보기
+{% endblock %}
+
+{% block sub_css %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}/statics/quills/v_2.0.3/quill.snow.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}/statics/css/custom/post_quill_snow.css">
+
+    <style>
+
+        /* Quill 편집기 안의 동영상(iframe/video)을 반응형 16:9로 */
+        #editor-container .ql-editor .ql-video,
+        #editor-container .ql-editor video.ql-video {
+            width: 100% !important;
+            max-width: 100%;
+            height: auto !important;
+            aspect-ratio: 16 / 9;
+            display: block;
+            background: #000; /* 로딩 전 블랙 레터박스 */
+            margin: 20px 0;
+        }
+
+        /* Quill 편집기 안의 코드 블록을 그대로 유지 */
+        #editor-container .ql-editor .ql-code-block-container {
+            background-color: #23241f;
+            color: #f8f8f2;
+            overflow: visible;
+            margin-bottom: 5px;
+            margin-top: 5px;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+
+    </style>
+{% endblock %}
+
+{% block main %}
+    <section class="main-container">
+        <article class="contents-container">
+            <div class="uk-flex uk-flex-right">
+                {% if current_user.id == article.author_id %}
+                    <div>
+                        <p class="uk-text-right uk-margin-right"><a href="/articles/article/update/{{ article.id }}">수정</a></p>
+                    </div>
+                    <div>
+                        <p class="uk-text-right uk-margin-right"><a href="#" id="deleteBtn">삭제</a></p>
+                    </div>
+                {% endif %}
+                <div>
+                    <p class="uk-text-right"><a href="/articles">모든 게시글</a></p>
+                </div>
+            </div>
+            <input type="hidden" id="article_id" name="article_id" value="{{ article.id }}">
+
+            <h3 class="uk-heading-divider">제목: {{ article.title }}</h3>
+            <div class="uk-margin" uk-grid>
+                <div class="uk-width-1-2">
+                    {% if article.img_path %}
+                        <img src="{{ STATIC_URL }}/{{ article.img_path }}" style="width: 100%" alt="Article Image">
+                    {% else %}
+                        <img src="{{ STATIC_URL }}/media/default/blog_default.png" style="width: 100%" alt="Article Image">
+                    {% endif %}
+                </div>
+                <div class="uk-width-1-2">대표 이미지</div>
+            </div>
+
+
+            <p class="uk-text-right">{{ article.created_at }}</p>
+            <p class="uk-text-right">{{ article.author.username }}</p>
+
+            <div id="editor-container">
+                <div class="ql-editor object-content">{{ article.content | safe }}</div>
+            </div>
+
+
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const images = document.querySelectorAll('.object-content p img');
+                    const paragraphs = document.querySelectorAll('.object-content p');
+                    paragraphs.forEach(p => {
+                        const textContent = p.textContent.trim();
+                        const hasImage = p.querySelector('img');
+                        const pImg = p.querySelector('img');
+
+                        if (hasImage) {
+                            if (textContent.length > 0) {pImg.style.marginTop = '20px';} else {}
+                        } else {}
+                    });
+                    // 이미지는 모두 p태그 안에 있다. p태그는 위아래 20px를 주고 있고,
+                    // p img(p테그 안에 있는 img는 margin이 전혀 없이 올라간다.
+
+                    //images.forEach(img => {
+                       //if (img.style.marginTop === '') img.style.marginTop = '20px';
+                        //if (img.style.marginBottom === '') img.style.marginBottom = '20px';
+                    //});
+                });
+        </script>
+
+        </article>
+
+    <article>
+        <div class="object-content-test">
+
+        </div>
+        <script>
+
+        </script>
+
+    </article>
+
+    {% if current_user %}
+        {% if current_user.username == article.author.username %}
+            <script src="{{ STATIC_URL }}/statics/js/custom/articles/delete.js"></script>
+        {% endif %}
+    {% endif %}
+    </section>
+
+{% endblock %}

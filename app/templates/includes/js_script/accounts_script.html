@@ -1,0 +1,355 @@
+<script> /*accounts_script: 회원 등록*/
+    (() => {
+        const formElement = document.getElementById("accountForm");
+        if (!formElement) return;
+        const submitBtn = formElement.querySelector('[type="submit"]');
+        const errorEl = document.getElementById("errorTag");
+
+        formElement.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (formElement.dataset.submitting === "1") return;
+            formElement.dataset.submitting = "1";
+            if (submitBtn) submitBtn.disabled = true;
+            if (errorEl) {
+                errorEl.textContent = "";
+                errorEl.style.display = "";
+            };
+            try {
+                const formData = new FormData(formElement)
+
+                const headers = {};
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+                if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 20000);
+                if (UserID) {
+                    try {
+                        if (formData.get("username")) {
+                            if (formData.get("username") === Username) {
+                                errorEl.innerText = `❌ 오류: 기존의 닉네임과 같은 닉네임입니다.`;
+                            } else {
+                                try {
+                                    const response = await accountPatch();
+                                    if (response.status === 200) {
+                                        const result = await response.json();
+                                        const hasDetail = Object.prototype.hasOwnProperty.call(result, "detail");
+                                        const detail = result.detail;
+                                        console.log("detail", detail);
+                                        // 성공(메시지 없음) 처리
+                                        if (!hasDetail || detail === null) { // == null 은 null 또는 undefined 모두 true
+                                            await handleResponse(result);
+                                        } else {
+                                            // 백엔드에서 custom_http_exception_handler 499 JSONResponse
+                                            if (detail === "존재하는 닉네임") {
+                                                errorEl.innerText = `❌ 오류: 이미 존재하는 사용자 닉네임입니다.`;
+                                            }
+                                            // 432 JSONResponse
+                                            if (detail === "닉네임 정책 위반") {
+                                                errorEl.innerText = `❌ 오류: 닉네임은 최소 3글자 이상이어야 합니다.`;
+                                            }
+                                            // 411 JSONResponse
+                                            if (detail === "비밀번호 불일치") {
+                                                errorEl.innerText = `❌ 오류: 비밀번호가 일치하지 않습니다.`;
+                                            }
+                                        }
+                                    }
+                                } catch (err) {
+                                    if (err.name === "AbortError") {
+                                        if (errorEl) errorEl.textContent = "❌ 요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.";
+                                    } else {
+                                        if (errorEl) errorEl.textContent = "❌ 네트워크 오류가 발생했습니다.";
+                                    }
+                                } finally {
+                                    formElement.dataset.submitting = "0";
+                                    if (submitBtn) submitBtn.disabled = false;
+                                }
+                            }
+                        } else if (formData.get("email")) {
+                            if (formData.get("email") === Email) {
+                                errorEl.innerText = `❌ 오류: 기존의 이메일과 같은 이메일입니다.`;
+                            } else {
+                                try {
+                                    const response = await accountPatch();
+                                    if (response.status === 200) {
+                                        const result = await response.json();
+                                        const hasDetail = Object.prototype.hasOwnProperty.call(result, "detail");
+                                        const detail = result.detail;
+                                        // 성공(메시지 없음) 처리
+                                        if (!hasDetail || detail === null) { // == null 은 null 또는 undefined 모두 true
+                                            await handleResponse(result);
+                                        } else {
+                                            // 432 JSONResponse
+                                            if (detail === "이메일 형식 부적합") {
+                                                errorEl.innerText = `❌ 오류: 이메일 형식에 맞게 정확히 입력해 주세요!`;
+                                            }
+                                            // 499 JSONResponse
+                                            if (detail === "존재하는 이메일") {
+                                                errorEl.innerText = `❌ 오류: 이미 존재하는 사용자 이메일입니다.`;
+                                            }
+                                            // 411 JSONResponse
+                                            if (detail === "비밀번호 불일치") {
+                                                errorEl.innerText = `❌ 오류: 비밀번호가 일치하지 않습니다.`;
+                                            }
+                                        }
+                                    }
+
+                                } catch (err) {
+                                    if (err.name === "AbortError") {
+                                        if (errorEl) errorEl.textContent = "❌ 요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.";
+                                    } else {
+                                        if (errorEl) errorEl.textContent = "❌ 네트워크 오류가 발생했습니다.";
+                                    }
+                                } finally {
+                                    formElement.dataset.submitting = "0";
+                                    if (submitBtn) submitBtn.disabled = false;
+                                }
+
+                            }
+                        } else if (formData.get("newpassword")) {
+                            const oldPassword = formData.get("oldpassword");//document.getElementById('password').value;//
+                            const newPassword = formData.get("newpassword");//document.getElementById('newpassword').value;//
+                            const confirmPassword = formData.get("confirmPassword");//document.getElementById('confirmPassword').value;//
+                            try {
+                                if (newPassword !== confirmPassword) {
+                                    errorEl.innerText = `❌ 오류: 새로운 비밀번호가 일치하지 않습니다. 확인바랍니다.`;
+                                } else {
+                                    formData.set("password", oldPassword);
+                                    const actionUrl = formElement.getAttribute("action") || passwordUpdateURL;
+                                    const response = await fetch(actionUrl, {method: "PATCH", body: formData, headers, signal: controller.signal});
+                                    if (response.status === 200) {
+                                        const result = await response.json();
+                                        const hasDetail = Object.prototype.hasOwnProperty.call(result, "detail");
+                                        const detail = result.detail;
+                                        // 성공(메시지 없음) 처리
+                                        if (!hasDetail || detail === null) { // == null 은 null 또는 undefined 모두 true
+                                            clearTimeout(timeoutId);
+                                            await responseStatus(response, result, Username, Email, "none");
+                                        } else {
+                                            // 432 JSONResponse
+                                            if (detail === "비밀번호 정책 위반") {
+                                                errorEl.innerText = `❌ 오류: 비밀번호는 알파벳, 특수문자와 숫자를 모두 포함한 9자리 이상이어야 합니다."`;
+                                            }
+                                            // 411 JSONResponse
+                                            if (detail === "기존 비밀번호 불일치") {
+                                                errorEl.innerText = `❌ 오류: 기존 비밀번호가 일치하지 않습니다.`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            catch (err) {
+                                if (err.name === "AbortError") {
+                                    if (errorEl) errorEl.textContent = "❌ 요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.";
+                                } else {
+                                    if (errorEl) errorEl.textContent = "❌ 네트워크 오류가 발생했습니다.";
+                                }
+                            } finally {
+                                formElement.dataset.submitting = "0";
+                                if (submitBtn) submitBtn.disabled = false;
+                            }
+
+
+                        } else if (formData.get("imagefile")) {
+                            try {
+                                await accountPatchProgress(Username, Email, "image");
+                            } catch (err) {
+                                if (err.name === "AbortError") {
+                                    if (errorEl) errorEl.textContent = "❌ 요청 시간이 초과되었습니다.";
+                                } else {
+                                    if (errorEl) errorEl.textContent = "❌ 네트워크 오류가 발생했습니다.";
+                                }
+                            } finally {
+                                formElement.dataset.submitting = "0";
+                                if (submitBtn) submitBtn.disabled = false;
+                            }
+                        }
+                    } catch (err) {
+                        if (err.name === "AbortError") {
+                            if (errorEl) errorEl.textContent = "❌ 요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.";
+                        } else {
+                            if (errorEl) errorEl.textContent = "❌ 네트워크 오류가 발생했습니다.";
+                        }
+                    } finally {
+                                formElement.dataset.submitting = "0";
+                                if (submitBtn) submitBtn.disabled = false;
+                            }
+                } else {
+                    const usernameValue = document.getElementById('username').value;
+                    const emailValue = document.getElementById('register-email').value;
+                    const passwordValue = document.getElementById('password').value;
+                    const confirmPasswordValue = document.getElementById('confirmPassword').value;
+
+                    try {
+                        if (usernameValue.length === 0) {
+                            errorEl.innerText = `❌ 오류: 닉네임의 입력값이 없습니다.`;
+                        } else if (usernameValue.length < 3) {
+                            errorEl.innerText = `❌ 오류: 닉네임은 최소 3자 이상이어야 합니다.`;
+                        } else if (passwordValue !== confirmPasswordValue) {
+                            errorEl.innerText = `❌ 오류: 비밀번호가 일치하지 않습니다. 확인바랍니다.`;
+                        } else {
+                            const response = await accountPost();
+                            const result = await response.json();
+                            clearTimeout(timeoutId);
+                            await responseStatus(response, result, usernameValue, emailValue, "none");
+                        }
+
+
+                    } catch (err) {
+                        if (err.name === "AbortError") {
+                            if (errorEl) errorEl.textContent = "❌ 요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.";
+                        } else {
+                            if (errorEl) errorEl.textContent = "❌ 네트워크 오류가 발생했습니다.";
+                        }
+                    } finally {
+                        formElement.dataset.submitting = "0";
+                        if (submitBtn) submitBtn.disabled = false;
+                    }
+
+                }
+
+                async function accountPatch() {
+                    console.log("accountPatch");
+                    const actionUrl = formElement.getAttribute("action") || UpdateURL;
+                    return await fetch(actionUrl, {method: "PATCH", body: formData, headers, signal: controller.signal});
+                }
+
+                async function accountPatchProgress(usernameValue, emailValue, _type) {
+                    const response = await accountPatch();
+                    const result = await response.json();
+                    clearTimeout(timeoutId);
+                    await responseStatus(response, result, usernameValue, emailValue, _type);
+                }
+
+                async function accountPost() {
+                    const actionUrl = formElement.getAttribute("action") || RegisterURL;
+                    return await fetch(actionUrl, {method: "POST", body: formData, headers, signal: controller.signal});
+                }
+
+                async function handleResponse(result) { // 회원등록과 회원정보 변경 후 로그인 작업
+                    const loginFormData = new FormData(formElement);
+                    if (formData.get("username")) {
+                        loginFormData.delete('username');
+                    }
+                    if (formData.get("oldpassword")) {
+                        loginFormData.delete('oldpassword');
+                    }
+                    if (formData.get("newpassword")) {
+                        loginFormData.set('password', formData.get("newpassword"));
+                    }
+                    if (formData.get("confirmPassword")) {
+                        loginFormData.delete('confirmPassword');
+                    }
+
+                    if (!formData.get("email")) {
+                        loginFormData.set("email", result.email);
+                    }
+                    const jsonData = Object.fromEntries(loginFormData.entries());
+                    const _response = await fetch(LoginURL, {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken},
+                        body: JSON.stringify(jsonData)
+                    });
+                    try {
+                        console.log("_response.status", _response.status);
+                        const _result = await _response.json();
+
+                        if (_response.ok) {
+                            window.location.href = `/`;
+                        } else {
+                            errorEl.innerText = `❌ 오류: ${_result.detail}`;
+                        }
+                    } catch (err) {
+                        console.log("HANDLE_RESPONSE 오류(네트워크, 이메일, 비밀번호, 최종 인증토큰 등의 문제): err", err)
+                        if (err.name === "AbortError") {
+                            if (errorEl) errorEl.textContent = "❌ 요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.";
+                        } else {
+                            if (errorEl) errorEl.textContent = "❌ 네트워크 오류가 발생했습니다.";
+                        }
+                    } finally {
+                        formElement.dataset.submitting = "0";
+                        if (submitBtn) submitBtn.disabled = false;
+                    }
+                }
+
+                async function responseStatus(response, result, usernameValue, emailValue, _type) {
+                    if (response.status === 200 || response.status === 201) {
+                        if (_type === "image") {
+                            window.location.href = `/accounts/account/` + UserID;
+                        } else {
+                            const hasDetail = Object.prototype.hasOwnProperty.call(result, "detail");
+                            const detail = result.detail;
+                            // 성공(메시지 없음) 처리
+                            if (!hasDetail || detail === null) { // == null 은 null 또는 undefined 모두 true
+                                await handleResponse(result);
+                            } else {
+                                // 432 JSONResponse
+                                if (detail === "이메일 형식 부적합") {
+                                    errorEl.innerText = `❌ 오류: 오류: 이메일은 @를 포함하여 이메일 형식에 맞게 작성되어야 합니다.`;
+                                }
+                                // 499 JSONResponse
+                                if (detail === "존재하는 이메일") {
+                                    errorEl.innerText = `❌ 오류: 존재하는 사용자 이메일입니다.`;
+                                }
+                                // 백엔드에서 custom_http_exception_handler 410 JSONResponse
+                                if (detail === "비밀번호 정책 위반") {
+                                    errorEl.innerText = `❌ 오류: 비밀번호는 알파벳, 특수문자와 숫자를 모두 포함한 9자리 이상이어야 합니다.`;
+                                }
+                                // 499 JSONResponse
+                                if (detail === "존재하는 닉네임") {
+                                    errorEl.innerText = `❌ 오류: 이미 존재하는 사용자 닉네임입니다.`;
+                                }
+                                if (detail === "유효하지 않은 인증토큰") {
+                                    errorEl.innerText = `❌ 오류: 이메일 인증토큰이 유효하지 않습니다.`;
+                                }
+                                if (detail === "인증토큰 불일치") {
+                                    errorEl.innerText = `❌ 오류: 인증토큰이 일치 않습니다.`;
+                                }
+                                if (detail === "세션 이메일 불일치") {
+                                    errorEl.innerText = `❌ 오류: 처음 이메일과 일치 않습니다.`;
+                                }
+
+                            }
+
+                        }
+                    } else if (response.status === 401) {
+                        errorEl.innerText = `❌ 오류: ${result.detail}`;
+                    } else if (response.status === 409) { // 닉네임과 이메일 중복 체크 메시지
+                        errorEl.innerText = `❌ 오류: ${result.detail}`;
+                    } else if (response.status === 422) {
+                        if (typeof (result.detail) === "object") {
+                            if (result.detail[0].loc[0] === "username") {
+                                if (!usernameValue) {
+                                    errorEl.innerText = `❌ 오류: 닉네임의 입력값이 없습니다.`;
+                                } else {
+                                    errorEl.innerText = `❌ 오류: 닉네임은 최소 3자 이상이어야 합니다.`;
+                                }
+                            } else if (result.detail[0].loc[0] === "email") {
+                                if (!emailValue) {
+                                    errorEl.innerText = `❌ 오류: 이메일의 입력값이 없습니다.`;
+                                } else {
+                                    errorEl.innerText = `❌ 오류: 이메일은 @를 포함하여 이메일 형식에 맞게 작성되어야 합니다.`;
+                                }
+                            }
+                        } else if (typeof (result.detail) === "string") {
+                            // 비밀번호 입력값이 없는 경우와 비밀번호 적합성 체크 후 오류 메시지
+                            errorEl.innerText = `❌ 오류: ${result.detail}`;
+                        }
+                    }
+                }
+
+            } catch (err) {
+                console.log("RESPONSE_STATUS 오류(네트워크, 이메일, 비밀번호, 최종 인증토큰 등의 문제): err", err)
+                if (err.name === "AbortError") {
+                    if (errorEl) errorEl.textContent = "❌ 요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.";
+                } else {
+                    if (errorEl) errorEl.textContent = "❌ 네트워크 오류가 발생했습니다.";
+                }
+            } finally {
+                formElement.dataset.submitting = "0";
+                if (submitBtn) submitBtn.disabled = false;
+            }
+        });
+    })();
+
+</script>

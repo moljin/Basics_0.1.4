@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}
+    로또
+{% endblock %}
+
+{% block sub_css %}
+    <style>
+
+    </style>
+    <link rel="stylesheet" href="{{ STATIC_URL }}/statics/css/custom/lotto.css">
+{% endblock %}
+
+{% block head_js %}
+    <script>
+    </script>
+{% endblock %}
+
+{% block main %}
+    <div class="form-container">
+        <h4 class="mb-20">당첨로또 최다번호 추출</h4>
+            string 으로 저장된 최다빈도 번호를 integer list 로 다시 변환해야,
+            탑10 로또 번호 생성시 리스트를 사용할 수 있다. <br>
+            {% if old_extract_num %}
+                <div id="exist">
+                    <div class="mt-10" style="text-align: center">현재 <span id="last-title">{{ old_extract.title }}</span>까지 최다 당첨번호 10개</div>
+                    <div style="text-align: center"><span id="lotto-num">{{ old_extract_num }}</span></div>
+                    <br>
+                </div>
+            {% else %}
+                <div id="first" class="mt-10" style="text-align: center">1등 당첨 다빈도 번호를 추출하세요!</div><br>
+                <div id="exist" style="display: none">
+                    <div class="mt-10" style="text-align: center">현재 <span id="last-title"></span>까지 최다 당첨번호 10개</div>
+                    <div style="text-align: center"><span id="lotto-num"></span></div>
+                    <br>
+                </div>
+            {% endif %}
+            <div>아래에 마지막 회차를 입력하면 그때까지의 당첨 최다번호를 추출하여 로또 번호 예측에 사용됩니다.</div>
+            <div class="uk-margin" id="errorTag"><!--js에서 넘어온 오류 메시지를 넣는다.--></div>
+            <form id="extractForm" class="mt-20" >
+                <input class="uk-input" type="text" name="latest_round" placeholder="마지막회차(숫자만) 입력">
+                <div class="mt-20">
+                    <button class="uk-button uk-button-default uk-align-right" type="submit">추출</button>
+                </div>
+                <div class="mt-20 pt-5">
+                    <a href="https://dhlottery.co.kr/gameResult.do?method=byWin" target="_blank">마지막회차 알아보기</a>
+                </div>
+
+            </form>
+            {% include 'includes/js_script/lotto_script.html' %}
+
+    <br>
+    </div>
+{% endblock %}

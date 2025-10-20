@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}
+    회원 상세정보
+{% endblock %}
+
+{% block main %}
+    <section class="main-container">
+        <article class="contents-container">
+            회원 상세정보 : {{ current_user }}
+            <br>
+            <div>id: {{ current_user.id }}</div>
+            <div>username: {{ current_user.username }}</div>
+            <div>email: {{ current_user.email }}</div>
+            <!--div class="menu-item"><a href="apis/accounts/{{ current_user.id }}">회원 탈퇴</a></div-->
+            <input type="hidden" id="user_id" name="user_id" value="{{ current_user.id }}">
+            <div class="menu-item"><a href="#" id="withDrawBtn">회원 탈퇴</a></div>
+            {% if current_user.img_path %}
+                <img src="{{ STATIC_URL }}/{{ current_user.img_path }}" style="width: 100%" alt="Article Image">
+            {% else %}
+                <img src="{{ STATIC_URL }}/media/default/blog_default.png" style="width: 100%" alt="Article Image">
+            {% endif %}
+
+        </article>
+    <script src="{{ STATIC_URL }}/statics/js/custom/accounts/withdraw.js"></script>
+    </section>
+{% endblock %}

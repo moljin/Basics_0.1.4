@@ -1,0 +1,150 @@
+<script>/*lost_script: 비번 분실*/
+    (() => {
+        const formElement = document.getElementById("accountForm");
+        if (!formElement) return;
+        const submitBtn = formElement.querySelector('[type="submit"]');
+        const errorEl = document.getElementById("errorTag");
+
+        formElement.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (formElement.dataset.submitting === "1") return;
+            formElement.dataset.submitting = "1";
+            if (submitBtn) submitBtn.disabled = true;
+            if (errorEl) errorEl.textContent = "";
+            try {
+                const formData = new FormData(formElement)
+
+                const headers = {};
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+                if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+
+                const emailValue = document.getElementById('register-email').value;
+                const newPasswordValue = document.getElementById('newpassword').value;
+                const confirmPasswordValue = document.getElementById('confirmPassword').value;
+
+                try {
+                    if (newPasswordValue !== confirmPasswordValue) {
+                        errorEl.innerText = `❌ 오류: 비밀번호가 일치하지 않습니다. 확인바랍니다.`;
+                    } else {
+                        const response = await lostPasswordPatch();
+                        const result = await response.json();
+                        console.log("result.message: ", result.message);
+                        const msg = result?.message;
+                        if (typeof msg === 'string' && msg.trim() !== '') {
+                            alert(msg);
+                        }
+                        clearTimeout(timeoutId);
+                        await responseStatus(response, result, emailValue, "none");
+                    }
+
+
+                } catch (err) {
+                    console.log("Submit 네트워크 오류 발생: err", err);
+                    errorEl.innerText = `❌ 네트워크 오류 발생`;
+                } finally {
+                    formElement.dataset.submitting = "0";
+                    if (submitBtn) submitBtn.disabled = false;
+                }
+
+                async function lostPasswordPatch() {
+                    const actionUrl = formElement.getAttribute("action") || lostPasswordSetURL;
+                    return await fetch(actionUrl, {method: "PATCH", body: formData, headers, signal: controller.signal});
+                }
+
+                async function handleResponse(result) { /// 로그인 작업 /// 회원등록과 회원정보 변경 후
+                    const loginFormData = new FormData(formElement);
+                    if (formData.get("newpassword")) {
+                        loginFormData.set('password', formData.get("newpassword"));
+                    }
+                    if (formData.get("confirmPassword")) {
+                        loginFormData.delete('confirmPassword');
+                    }
+
+                    if (!formData.get("email")) {
+                        loginFormData.set("email", result.email);
+                    }
+                    const jsonData = Object.fromEntries(loginFormData.entries());
+                    const _response = await fetch(LoginURL, {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken},
+                        body: JSON.stringify(jsonData)
+                    });
+                    try {
+                        const _result = await _response.json();
+                        if (_response.ok) {
+                            window.location.href = `/`;
+                        } else {
+                            errorEl.innerText = `❌ 오류: ${_result.detail}`;
+                        }
+                    } catch (err) {
+                        console.log("handleResponse 네트워크 오류(이메일, 최종 인증토큰 등의 문제): err", err)
+                        errorEl.innerText = `❌ 네트워크 오류(이메일, 최종 인증토큰 등의 문제)`;
+                    }
+                }
+
+                async function responseStatus(response, result, emailValue, _type) {
+                    console.log("responseStatus response: ", response);
+                    if (response.status === 200 || response.status === 201) {
+                        if (_type === "image") {
+                            window.location.href = `/accounts/account/` + UserID;
+                        } else {
+                            const hasDetail = Object.prototype.hasOwnProperty.call(result, "detail");
+                            const detail = result.detail;
+                            // 성공(메시지 없음) 처리
+                            if (!hasDetail || detail === null) { // == null 은 null 또는 undefined 모두 true
+                                await handleResponse(result);
+                            } else {
+                                // 백엔드에서 custom_http_exception_handler 410 JSONResponse
+                                if (detail === "비밀번호 정책 위반") {
+                                    errorEl.innerText = `❌ 오류: 비밀번호는 알파벳, 특수문자와 숫자를 모두 포함한 9자리 이상이어야 합니다.`;
+                                }
+                                if (detail === "유효하지 않은 인증토큰") {
+                                    errorEl.innerText = `❌ 오류: 이메일 인증토큰이 유효하지 않습니다.`;
+                                }
+                                if (detail === "인증토큰 불일치") {
+                                    errorEl.innerText = `❌ 오류: 인증토큰이 일치 않습니다.`;
+                                }
+                                if (detail === "세션 이메일 불일치") {
+                                    errorEl.innerText = `❌ 오류: 처음 이메일과 일치 않습니다.`;
+                                }
+                            }
+                        }
+                    } else if (response.status === 401) {
+                        errorEl.innerText = `❌ 오류: ${result.detail}`;
+                    } else if (response.status === 409) { // 닉네임과 이메일 중복 체크 메시지
+                        errorEl.innerText = `❌ 오류: ${result.detail}`;
+                    } else if (response.status === 422) {
+                        if (typeof (result.detail) === "object") {
+                            if (result.detail[0].loc[0] === "email") {
+                                if (!emailValue) {
+                                    errorEl.innerText = `❌ 오류: 이메일의 입력값이 없습니다.`;
+                                } else {
+                                    errorEl.innerText = `❌ 오류: 이메일은 @를 포함하여 이메일 형식에 맞게 작성되어야 합니다.`;
+                                }
+                            }
+                        } else if (typeof (result.detail) === "string") {
+                            // 비밀번호 입력값이 없는 경우와 비밀번호 적합성 체크 후 오류 메시지
+                            errorEl.innerText = `❌ 오류: ${result.detail}`;
+                        }
+                    }
+                }
+
+            } catch (err) {
+                if (`${err}` === "Error: 본문을 입력해 주세요.") { // if (!hasText && !hasImage) throw new Error("본문을 입력해 주세요.");
+                    errorEl.innerText = `⚠️주의: 본문을 입력해 주세요.`;
+                } else {
+                    const msg = err?.name === "AbortError" ? "요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해 주세요." : err?.message || String(err);
+                    if (errorEl) errorEl.textContent = `❌ 오류: ${msg}`;
+                }
+            } finally {
+                formElement.dataset.submitting = "0";
+                if (submitBtn) submitBtn.disabled = false;
+            }
+        });
+    })();
+
+</script>

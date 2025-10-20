@@ -1,0 +1,68 @@
+<script>
+document.getElementById("extractForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const errorEl = document.getElementById("errorTag");
+
+        const headers = {};
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+        if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+        const formData = new FormData(e.target);
+        const jsonData = Object.fromEntries(formData.entries());
+        console.log(formData);
+        console.log(jsonData);
+
+
+        const response = await fetch("/lotto/win/top10/post", {
+            method: "POST",
+            body: formData,
+            headers,
+            signal: controller.signal
+            //headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken},
+            //body: JSON.stringify(jsonData)
+        });
+        clearTimeout(timeoutId);
+        console.log(response);
+
+        try {
+            const result = await response.json();
+            console.log(result);
+
+            if (response.ok) {
+                const hasDetail = Object.prototype.hasOwnProperty.call(result, "detail");
+                const detail = result.detail;
+                // 성공(메시지 없음) 처리
+                if (!hasDetail || detail === null) { // == null 은 null 또는 undefined 모두 true
+                    if (document.getElementById("exist").style.display === "none") {
+                        document.getElementById("first").style.display = "none"
+                        document.getElementById("exist").style.display = "block";
+                    }
+                    document.getElementById("last-title").innerText = result.latest;
+                    document.getElementById("lotto-num").innerText = result.top10_list;
+                    errorEl.innerText = `✅ 성공: 입력하신 회차의 데이터가 성공적으로 저장되었습니다.`;
+                } else {
+                    if (detail === "Conflict") {
+                        errorEl.innerText = `❌ 오류: 동일한 회차 당첨번호는 저장되어 있어요...`;
+                    }
+                    if (detail === "No Event") {
+                        errorEl.innerText = `❌ 오류: 입력하신 회차는 아직 진행하지 않았어요...`;
+                    }
+                    // 백엔드에서 custom_http_exception_handler 415 JSONResponse
+                    if (detail === "Not Last") {
+                        errorEl.innerText = `❌ 오류: 입력하신 회차는 마지막 회차가 아니에요...`;
+                    }
+                }
+            } else {
+                errorEl.innerText = `❌ 오류: ${result.detail}`;
+            }
+        } catch (err) {
+            console.log("err.message: ", err.message);
+            errorEl.innerText = `네트워크 오류 발생: ${err}`;
+        }
+
+
+    });
+</script>

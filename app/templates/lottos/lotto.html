@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}
+    로또
+{% endblock %}
+
+{% block sub_css %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}/statics/css/custom/lotto.css">
+{% endblock %}
+
+{% block head_js %}
+    <script>
+    </script>
+{#    <script src="{{ STATIC_URL }}/uikit/js/uikit.min.js"></script>#}
+{#    <script src="{{ STATIC_URL }}/uikit/js/uikit-icons.min.js"></script>#}
+
+{% endblock %}
+
+{% block main %}
+    <section class="section-container mb-30">
+        <div class="main-width padding10">
+            <br>
+            <div class="uk-text-center">
+                <h3 class="mb-10"><strong>순전히 재미로 로또 번호를 맞춰 보세요!</strong>
+                    {% if current_user %}
+                        {% if admin %}
+                            <a href="/lotto/win/extract">[TOP10 업데이트]</a>
+                        {% endif %}
+                    {% endif %}
+                </h3>
+            </div>
+        </div>
+    </section>
+
+    <div class="bg-100">
+        <div class="main-width lotto mb-20">
+            <div class="grid">
+                <div class="uk-align-center lotto-btn">
+                    <button class="uk-button uk-button-default mr-10" onclick="window.location.href='/lotto/random';">랜덤 로또</button>
+{#                    <button class="uk-button uk-button-default" onclick="window.location.href='/lotto/top10';">탑10 로또</button>#}
+
+                </div>
+            </div>
+            <div class="uk-margin">
+                <form class="uk-flex uk-align-center wanted-form">
+                    {% if input_num %}
+                        <input class="uk-input" type="text" name="num" value="{{ input_num }}">
+                    {% else %}
+                        <input class="uk-input" type="text" name="num" placeholder=" 숫자" required>
+                    {% endif %}
+                    <button class="uk-button uk-button-default" onclick="window.location.href='';">지정 로또</button>
+                </form>
+
+            </div>
+        </div>
+    {% if message %}
+        <div class="uk-alert-primary uk-text-center message" uk-alert>
+            <a href class="uk-alert-close" uk-close></a>
+            <p>{{ message }}</p>
+        </div>
+    {% endif %}
+        <hr class="ml-10 mr-10">
+        <div class="main-width lotto mb-20">
+            <div class="newball_container uk-align-center">
+                <div class="grid lotto" uk-grid>
+
+                    {% for num in variable %}
+                        <div class="stage">
+                            <div class="ball ball{{ loop.index }}" tabIndex="-1">
+                                <div class="number">{{ num }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+            <br>
+        </div>
+    </div>
+    <section class="section-container mt-15">
+        <div class="main-width padding10">
+            <div>
+                <p class="mb-10"><strong>랜덤 로또</strong>는 빈도수에 관계없이, 무작위로 6개를 뽑아내는 방법입니다.
+{#                    <strong>탑10 로또</strong>는 {{ latest }}회까지 가장 빈도수가 높은 당첨번호 10개를 뽑아, 그 10개 번호중에서 6개를 무작위로 추출하는 방법입니다.#}
+                    <strong>지정 로또</strong>는 빈칸에 숫자를 입력한 후에 클릭하면, {{ latest }}회까지 가장 빈도수가 높은 당첨번호를 입력한 숫자만큼 뽑아, 그 번호들중에서 6개의 로또번호를 무작위로 추출하는 알고리즘으로 되어 있습니다.
+                (당첨 로또 번호는 6개이므로 6이상을 입력해야하고, 로또번호는 1-45까지의 숫자이므로 빈도수 높은 숫자가 46이상은 나올 수 없습니다. 6-45사이의 숫자를 입력해야 합니다.)</p>
+                <div>
+                    <div class="mb-5">당첨빈도수가 높은 번호를 몇 개 지정하는냐에 따라, 로또번호를 6개를 무작위 추출하는 경우의 수는 <strong>6개 지정할 때 경우의 수는 1개 / 7개 지정할 때 경우의 수는 7개 / 8개 지정할 때 경우의 수는 28개 / 9개 지정할 때 경우의 수는 84개 / 10개 지정할 때 경우의 수는 210개</strong>.....입니다. </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+{% endblock %}

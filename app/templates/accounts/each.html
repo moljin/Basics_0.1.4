@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if current_user %}
+        회원정보 수정
+    {% else %}
+        회원등록
+    {% endif %}
+{% endblock %}
+
+{% block sub_css %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}/statics/css/custom/form.css">
+    <style>
+        #authVerifyForm, #accountForm {
+        {#display: none#}
+        }
+
+    </style>
+{% endblock %}
+
+{% block sub_js %}
+    <script>
+        const UserID = {{ (current_user.id if current_user else none) | tojson }};
+        const Username = {{ (current_user.username if current_user else '') | tojson }};
+        const Email = {{ (current_user.email if current_user else '') | tojson }};
+
+        const RegisterURL = "/apis/accounts/register";
+        const UpdateURL = {{ ("/apis/accounts/" + (current_user.id | string) if current_user else none) | tojson }};
+        const passwordUpdateURL = {{ ("/apis/accounts/password/" + (current_user.id | string) if current_user else none) | tojson  }}
+        const LoginURL = "/apis/auth/login";
+        window.AllParams = {
+            UserID: {{ (current_user.id if current_user else none) | tojson }},
+            Username: {{ (current_user.username if current_user else '') | tojson }},
+            Email: {{ (current_user.email if current_user else '') | tojson }},
+
+            RegisterURL: "/apis/accounts/register",
+            UpdateURL: {{ ("/apis/accounts/" + (current_user.id | string) if current_user else none) | tojson }},
+            passwordUpdateURL: {{ ("/apis/accounts/password/" + (current_user.id | string) if current_user else none) | tojson  }},
+            LoginURL: "/apis/auth/login",
+        }
+
+
+    </script>
+{% endblock %}
+
+{% block main %}
+    <section class="main-container">
+        {% if email %}
+            <article class="contents-container register-container">
+                <!--이메일 변경은 변경하고자하는 이메일로 인증이 완료되면 변경된다.-->
+                <h2>이메일 변경하기</h2>
+                <hr class="hr-bold">
+                <div class="uk-margin">
+                    <p>새로운 이메일로 인증코드가 발송됩니다. 인증코드를 확인하고 비밀번호와 함께 입력한 후 변경 완료하기를 클릭하면, 새로운 이메일로 변경이 완료됩니다.</p>
+                </div>
+                <div class="uk-margin">
+                    <div>기존 이메일</div>
+                    <input class="uk-input" id="old-email" type="text" value="{{ current_user.email }}" disabled>
+                </div>
+                <div class="uk-margin" id="errorTag"><!--js에서 넘어온 오류 메시지를 넣는다.--></div>
+
+                <form id="authRequestForm">
+                    <div class="uk-margin request-container">
+                        <div class="uk-margin request-email">
+                            <div>새로운 이메일</div>
+                            <input class="uk-input" id="request-type" type="hidden" name="type" value="email">
+                            <input class="uk-input" id="request-email" type="email" name="email" required>
+                        </div>
+                        <div class="auth-create">
+                            <button class="auth-create-btn" type="submit">인증코드 발송</button>
+                        </div>
+                    </div>
+                </form>
+                <form id="authVerifyForm">
+
+                    <div class="uk-margin verify-container">
+                        <div class="uk-margin">
+                            <input class="uk-input" id="verify-email" type="hidden" name="email">
+                        </div>
+                        <div class="uk-margin input-container">
+                            <div>인증코드</div>
+                            <input class="uk-input" id="authcode" type="text" name="authcode" required>
+                        </div>
+                        <div class="uk-margin">
+                            <div>비밀번호</div>
+                            <input class="uk-input" type="hidden" name="type" value="email">
+                            <input class="uk-input" type="hidden" name="old_email" value="{{ current_user.email }}">
+                            <input class="uk-input" id="verify-password" type="password" name="password" required>
+                        </div>
+                        <div class="btn-container">
+                            <button class="auth-btn" type="submit">변경 완료하기</button>
+                        </div>
+                    </div>
+                </form>
+                {% include 'includes/js_script/authcode_script.html' %}
+            </article>
+        {% else %}
+            <article class="contents-container register-container">
+                {% if username %}
+                    <h2>닉네임 변경하기</h2>
+                    <hr class="hr-bold">
+                {% elif image %}
+                    <h2>프로필 이미지 변경하기</h2>
+                    <hr class="hr-bold">
+                    {% if current_user.img_path %}
+                        <img src="{{ STATIC_URL }}/{{ current_user.img_path }}" style="width: 100%" alt="Article Image">
+                    {% elif not current_user.img_path %}
+                        <img src="{{ STATIC_URL }}/media/default/blog_default.png" style="width: 100%" alt="Article Image">
+                    {% endif %}
+                {% elif password %}
+                    <h2>비밀번호 변경하기</h2>
+                    <hr class="hr-bold">
+                {% endif %}
+                <div class="uk-margin" id="errorTag"><!--js에서 넘어온 오류 메시지를 넣는다.--></div>
+
+                <form id="accountForm" enctype="multipart/form-data">
+                    <div class="uk-margin">
+                        {% if username %}
+                            <div class="uk-margin">
+                                <input class="uk-input" id="username" type="text" name="username" value="{{ current_user.username }}">
+                            </div>
+                            <div class="uk-margin">
+                                <div>비밀번호</div>
+                                <input class="uk-input" id="password" type="password" name="password" required>
+                            </div>
+                        {% elif image %}
+                            <div class="uk-margin">
+                                <label for="imagefile" class="form-label">Profile Image</label>
+                                <input type="file" accept="image/*" class="form-control" id="imagefile" name="imagefile" required/>
+                            </div>
+                            <div class="uk-margin">
+                                <div>비밀번호</div>
+                                <input class="uk-input" id="password" type="password" name="password" required>
+                            </div>
+                        {% elif password %}
+                            <div class="uk-margin">
+                                <div>기존 비밀번호</div>
+                                <input class="uk-input" id="oldpassword" type="password" name="oldpassword" required>
+                            </div>
+                            <div class="uk-margin">
+                                <div>새 비밀번호</div>
+                                <input class="uk-input" id="newpassword" type="password" name="newpassword" required>
+                            </div>
+                            <div class="uk-margin">
+                                <div>새 비밀번호 확인</div>
+                                <input class="uk-input" id="confirmPassword" type="password" name="confirmPassword" required>
+                            </div>
+
+                        {% endif %}
+                    </div>
+
+                    <div class="uk-margin">
+                        <button class="register-btn" type="submit">변경 완료하기</button>
+                    </div>
+                </form>
+            </article>
+            {% include 'includes/js_script/accounts_script.html' %}
+        {% endif %}
+
+
+    </section>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}
+    SERVER
+{% endblock %}
+
+{% block main %}
+    <section class="main-container">
+        <article class="contents-container">
+
+            <p class="h1">SERVER SETTING AND RELATED DEVELOPMENT TOPIC</p>
+
+            <div>
+                <h4>서버구축 진행순서</h4>
+                <p>1. Linux ubuntu 20.04.5 LTS 설치</p>
+                <div>ubuntu server: ***j** : y****8****</div>
+                <div>iptime 공유기: ***j** : i*t***@*8****</div>
+                <div>KT공유기 <a href="http://172.30.1.254" target="_blank"> http://172.30.1.254 </a> PC에서 로그인/ID, PW 변경완료 : ***j** : kt***j**@*8****</div>
+                <hr>
+                <a href="https://es2sun.tistory.com/242" target="_blank">[Ubuntu] 홈 서버 구축 - (0)Ubuntu 18.04 Server 부팅 USB 만들기</a> <br>
+                <a href="https://heroeswillnotdie.tistory.com/22" target="_blank">20.04 LTS server 설치-1</a><br>
+                <a href="https://devjaewoo.tistory.com/40" target="_blank">20.04 LTS server 설치-2</a><br>
+                <a href="https://gam1532.tistory.com/46" target="_blank">22.04 LTS server 설치</a><br>
+                <br>
+                <a href="https://alphalok.tistory.com/entry/%EC%9A%B0%EB%B6%84%ED%88%AC-2204-%EC%9A%B0%EB%B6%84%ED%88%AC-%EC%97%85%EB%8D%B0%EC%9D%B4%ED%8A%B8-apt-upgrade-%EC%B2%98%EC%9D%8C-%EC%84%A4%EC%B9%98-%ED%9B%84-%ED%95%B4%EC%95%BC-%ED%95%A0-%EC%9E%91%EC%97%85-1"
+                   target="_blank">우분투 22.04 LTS 처음 설치 후 해야할 작업</a><br>
+                <a href="https://ks-jun.tistory.com/84" target="_blank">ubuntu server 설치 후 인터넷 연결 확인방법</a><br>
+                <a href="https://jstar0525.tistory.com/112" target="_blank">ubuntu server 설치 후 ssh 동작 확인 방법 및 설치</a><br>
+                <a href="https://www.google.com/search?q=ubuntu+server+%EC%84%A4%EC%B9%98+%ED%9B%84+git+bash%EB%A1%9C+%EC%9B%90%EA%B2%A9+%EC%A0%91%EC%86%8D&sca_esv=e1c88fd849d573ad&sxsrf=AE3TifMaoMl-WqHhaHT2GA5rKGlcSqRoKQ%3A1752497097253&ei=yft0aNSaD6bk2roPwoDviQM&oq=ubuntu+server+%EC%84%A4%EC%B9%98git+bash%EB%A1%9C+%EC%9B%90%EA%B2%A9+%EC%A0%91%EC%86%8D&gs_lp=Egxnd3Mtd2l6LXNlcnAiLXVidW50dSBzZXJ2ZXIg7ISk7LmYZ2l0IGJhc2jroZwg7JuQ6rKpIOygkeyGjSoCCAAyCBAhGKABGMMEMggQIRigARjDBEibSlD6JVj4LnADeAGQAQCYAZYBoAGRBaoBAzAuNbgBA8gBAPgBAZgCB6ACqQTCAgoQABiwAxjWBBhHwgIMECEYoAEYwwQYChgqwgIKECEYoAEYwwQYCpgDAIgGAZAGCpIHAzMuNKAH6RqyBwMwLjS4B6EEwgcDMi41yAcK&sclient=gws-wiz-serp"
+                   target="_blank">ubuntu server 설치 후 git bash로 원격 접속[chrome검색]</a><br>
+                <a href="https://jjeongil.tistory.com/957" target="_blank">Ubuntu 18.04 : SSH 키 : 설정 방법</a><br>
+                <a href="https://pinggoopark.tistory.com/155" target="_blank">ubuntu server 설치 후 openssh설치 후 ssh로 접속하기</a><br>
+                <a href="https://pinggoopark.tistory.com/156" target="_blank">ubuntu 24.04 LTS 이전 버전 설치 후 ssh 접속 포트 변경하기</a><br>
+                <a href="https://hayden-igm.tistory.com/91" target="_blank">ubuntu 24.04 LTS version SSH 포트 변경</a><br>
+                <a href="https://alphalok.tistory.com/entry/VMWare-17-Pro-%EC%9A%B0%EB%B6%84%ED%88%AC-2204-LTS-Server-Putty%EB%A1%9C-SSH-%EC%9B%90%EA%B2%A9%EC%A0%91%EC%86%8D%ED%95%98%EA%B8%B0"
+                   target="_blank">ubuntu server 설치 후 putty로 ssh 연결하기</a><br>
+                <br>
+                <a href="https://jjeongil.tistory.com/1297" target="_blank">Ubuntu 버전 확인하는 방법, 예제, 명령어</a><br>
+                <a href="https://timmer.tistory.com/352" target="_blank">ubuntu server 서버 공장초기화 하는 법 + .sh 파일로 한번에 실행</a><br>
+
+                <br>
+                <a href="https://cishome.tistory.com/30" target="_blank">리눅스 파일시스템 비교(ext4 & xfs)-1</a> <br>
+                <a href="https://blog.naver.com/PostView.nhn?blogId=hymne&logNo=220976678541" target="_blank">리눅스 파일시스템 비교(ext4 & xfs)-2</a> <br>
+                <a href="https://devjaewoo.tistory.com/41" target="_blank">[Linux] Ubuntu Server 20.04 RAID 구성하기</a><br>
+                <a href="https://m.blog.naver.com/sw4r/221770538756" target="_blank">[리눅스 (Linux) 명령어] 하드 디스크 파티션 확인 및 마운트 시키기(fdisk -l / df -h / mount 명령어)</a><br>
+                <a href="https://coding-factory.tistory.com/500" target="_blank">[Linux] 디렉토리 관련 명령어 총정리(확인, 이동, 생성, 삭제, 복사, 잘라내기)</a><br>
+                <br>
+                sudo -i <br>
+                apt-get update <br>
+                apt-get upgrade <br>
+                apt-get install net-tools <br>
+                ifconfig <br>
+                <hr>
+                <p>2. sudo ufw status</p>
+                <div>sudo ufw enable</div>
+                sudo ufw deny 80<br>
+                sudo ufw delete allow 80<br>
+                sudo ufw delete deny 80<br>
+                sudo ufw status<br><br>
+                <div>예산: ssh moljin@112.166.186.238 -p 52022</div>
+                <div>우분투 터미널 창에서 포트를 열어주는 것은 내부 IP(192.168.0.3) 포트를 여는 것이다.</div>
+                <div>터미널에서 여는 내부IP 포트는 외부IP포트와 포워딩시켜줘야 한다. iptime 공유기의 외부 IP(112.166.186.238)에 포트포워딩</div>
+                <div><img src="{{ STATIC_URL }}/media/default/server/port_ftp.jpg" alt=""></div>
+                KT공유기 로그인(ktuser/homehub)하고 난후, ID, 비밀번호 변경하는 페이지가 나온다. PC나 아이폰으로 로그인하더라도, 어떻게 입력해도 변경이 안되더라...<br>
+                그래서, 결국은 핸드폰으로 로그인하고, 172.30.1.254로 후진한다. 그러면 KT WiFi home 설정화면이 나온다. 여기서부터 그림데로,,,, <br>
+                그리고, 내부 IP 주소는, ubuntu 서버에 ifconfig 해서 확인(172.30.1.17)하면 된다.<br>
+                <p><a href="https://atnbt.com/%EC%BC%80%EC%9D%B4%ED%8B%B0-%EA%B3%B5%EC%9C%A0%EA%B8%B0-%ED%8F%AC%ED%8A%B8%ED%8F%AC%EC%9B%8C%EB%94%A9/#google_vignette" target="_blank">KT (케이티) 공유기 포트포워딩
+                    설정하기</a></p>
+
+                <p><img src="{{ STATIC_URL }}/media/default/server/KT_SSH.png" alt=""></p>
+
+
+                <p>port 순서: </p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;외부IP포트(포트포워딩) ===> 내부IP포트(터미널 포트열기) ===> 컨테이너포트(yml파일: 내부IP포트:컨테이너포트)</p>
+                <p>docker run -d -p 50009:9000 --name portainer . . . 에서는 내부IP포트:portainer(컨테이너)포트</p><br>
+                <p><a href="https://pinggoopark.tistory.com/156" target="_blank">[linux] ubuntu에 ssh 접속 포트 변경하기</a></p>
+                <hr>
+                <p><img src="{{ STATIC_URL }}/media/default/server/mount.jpg" alt=""></p>
+                <p>디렉토리 생성하기: </p>
+                <p>mkdir test : 디렉토리가 만들어진다.</p>
+                <p>sudo mount /dev/sdb1 test : 하드디스크(/dev/sdb1)에 test디렉토리를 mount한다. </p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;이렇게 마운트한 디렉토리는 rmdir test 혹은 rm -rf test로도 지워지지 않는다. : rm: cannot remove 'test': Device or resource busy </p>
+                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;이때는 마운트를 해제한 다음에 삭제: sudo umount test ===> rmdir test 혹은 rm -rf test로 삭제</p>
+                <p><a href="https://mapled.tistory.com/entry/%EC%9A%B0%EB%B6%84%ED%88%AC%EC%97%90%EC%84%9C-USB-%EB%A7%88%EC%9A%B4%ED%8A%B8-%ED%95%98%EB%8A%94-%EB%B0%A9%EB%B2%95" target="_blank">[Ubuntu]
+                    USB 마운트(mount)/언마운트(unmount) 하는 방법</a></p>
+                <p><a href="https://jjeongil.tistory.com/1413" target="_blank">Linux : 파일 시스템 Mount, Unmount 하는 방법, 예제, 명령어</a></p>
+
+                <hr>
+                <p>3. apt install docker.io -y</p>
+                <a href="https://bluese05.tistory.com/21" target="_blank">docker container에 접속하기</a><br>
+                <a href="https://devjh.tistory.com/165" target="_blank">[Docker] 컨테이너 안에 파일 수정하기 (container config)</a><br>
+                <a style="color: red" href="https://tifferent.tistory.com/10" target="_blank">리눅스 Docker 저장 위치 확인 및 변경[기존 컨테이너 & 이미지 구동이 안된다. 지워지지는 않지만..... docker설치후 저장위치 변경]</a><br>
+                <a href="https://happylie.tistory.com/82" target="_blank" style="color: red">[Docker] 도커 저장소 변경하기(Root Dir) - 온실 속 선인장(아래 방법이랑 좀 다르다...이걸로 하자)</a><br>
+                <a href="https://iamfreeman.tistory.com/entry/vi-vim-%ED%8E%B8%EC%A7%91%EA%B8%B0-%EB%AA%85%EB%A0%B9%EC%96%B4-%EC%A0%95%EB%A6%AC-%EB%8B%A8%EC%B6%95%ED%82%A4-%EB%AA%A8%EC%9D%8C-%EB%AA%A9%EB%A1%9D"
+                   target="_blank" style="font-weight: bold">vi /vim 편집기 명령어 정리 (단축키 모음 / 목록)</a><br>
+                ===> sudo docker info | grep Root (Docker 데이터 저장 위치 확인하기) <br>
+                ===> systemctl stop docker<br>
+                ===> /home 으로 이동후 [docker 데이터 저장할 폴더 생성하기] mkdir docker <br>
+                ===> vi /lib/systemd/system/docker.service (저장 위치 변경하기 위해 서비스 설정 파일 열기) <br>
+                ===> ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock <span style="color: red">--data-root=/home/docker/</span> [여기 추가...붉은색]
+                <br><br>
+                ===> systemctl daemon-reload<br>
+                ===> systemctl stop docker<br>
+                ===> systemctl start docker<br>
+                ===> sudo docker info | grep Root<br><br>
+
+                docker volume create portainer_data <br>
+                docker run -d -p 50009:9000 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latest <br>
+                docker restart portainer<br><br>
+
+                docker swarm init <br><br>
+
+
+                docker container ls<br>
+                docker rm -f portainer-container-ID<br><br>
+
+                docker images<br>
+                docker image rm portainer-image-ID<br><br>
+
+                docker volume ls<br>
+                docker volume rm portainer_data<br>
+                <hr>
+                <p>4. stack을 빌드하기전에. . . 반드시, FTP로 nginx.conf를 옮겨놔야 한다. </p>
+                <p>nginx container 빌드시에 컨테이너가 만들어지지 않는다.</p><br>
+                FDKproject0.1 <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── flask_www <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│ ├── uwsgi.ini <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│ ├── route <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│ ├── apps . . .<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│ ├── templates <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│ ├── requirements.txt <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│ └── Dockerfile <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── nginx <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│ └── nginx.conf <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── docker-stack.yml <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── app.py <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── venv <br><br>
+                pip install gunicorn 빼먹지 말라<br>
+                pip freeze > requirements.txt <br>
+                pip freeze > flask_www/requirements.txt<br>
+                <hr>
+                <p>5. stack 빌드 후에 받드시 db migrate!!!</p>
+                <p>docker exec -it [flask app container ID] /bin/bash 로 플라스크 앱 컨테이너 내로 진입</p>
+                <p>flask db init ===> flask db migrate ===> flask db upgrade 시행</p>
+                (위와 같은 명령: docker exec [app 혹은 container ID] flask db init/migrate/upgrade)<br><br>
+                docker logs -t flask_www(app 혹은 container ID)<br>
+                docker logs -tf flask_www(app 혹은 container ID)<br>
+
+                <p></p>
+                <p></p>
+                <p></p>
+                <p></p>
+                <p></p>
+            </div>
+            <hr>
+            <a href="https://www.yougetsignal.com/tools/open-ports/">해당 IP의 포트 open check Site</a><br>
+            <a href="https://www.lesstif.com/gitbook/git-ssh-22-17105551.html" target="_blank">git + ssh 연계시 22 번 포트가 아닌 다른 포트 사용할 경우 앞에 ssh:// 를 적고 id@host:포트번호를 적어줌</a><br>
+
+
+        </article>
+    </section>
+
+{% endblock %}

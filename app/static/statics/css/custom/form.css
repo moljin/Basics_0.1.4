@@ -1,0 +1,27 @@
+.contents-container.login-container, .contents-container.register-container {
+    max-width: 600px;
+    margin: 40px auto;
+    border: solid 1px #ced6e0;
+    border-radius: 5px;
+    padding: 20px 30px;}
+
+.login-container form div button,
+.register-container form div button,
+.article-create form.uk-form-stacked div button.create-btn{border: #30336b; width: 100%; height: 45px; background-color: #182C61; color: white; font-weight: 500; font-size: 20px; cursor: pointer;}
+
+.login-container form div button:hover,
+.register-container form div button:hover,
+.article-create form.uk-form-stacked div button.create-btn:hover{background-color: #341f97;}
+
+.hr-bold {border: 0;
+    margin-bottom: 25px;
+    height: 2px;
+    background: #dfe6e9;}
+
+
+
+
+
+
+
+

@@ -1,0 +1,250 @@
+<script>/*authcode_script: 이메일 인증 요청 및 검증*/
+    (() => {
+        const requestFormElement = document.getElementById("authRequestForm");
+        if (!requestFormElement) return;
+        const verifyFormElement = document.getElementById("authVerifyForm");
+        if (!verifyFormElement) return;
+        const accountFormElement = document.getElementById("accountForm");
+        //if (!accountFormElement) return;
+
+        const oldEmailInput = document.getElementById('old-email')
+        const requestEmailInput = document.getElementById('request-email')
+        const verifyEmailInput = document.getElementById('verify-email')
+        const verifyPasswordInput = document.getElementById('verify-password')
+        const registerEmailInput = document.getElementById('register-email')
+        const verifiedTokenInput = document.getElementById('verified-token')
+
+        const requestSubmitBtn = requestFormElement.querySelector('[type="submit"]');
+        const verifySubmitBtn = verifyFormElement.querySelector('[type="submit"]');
+
+        const errorElement = document.getElementById("errorTag");
+
+        requestEmailInput.addEventListener('input', function () {
+            // 한 문자씩 타이핑 할 때마다 hidden input 태그에 복사
+            verifyEmailInput.value = this.value;
+            if (registerEmailInput) registerEmailInput.value = this.value;
+        });
+
+        requestFormElement.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (requestFormElement.dataset.submitting === "1") return;
+            requestFormElement.dataset.submitting = "1";
+            if (requestSubmitBtn) requestSubmitBtn.disabled = true;
+            if (errorElement) errorElement.textContent = "";
+            try {
+                const formData = new FormData(e.target);
+                const jsonData = Object.fromEntries(formData.entries());
+
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+                try {
+                    const actionUrl = requestFormElement.getAttribute("action") || `/apis/accounts/authcode/request/email`;
+                    const response = await fetch(actionUrl, {
+                        method: "POST",
+                        body: JSON.stringify(jsonData),
+                        headers: {'Content-Type': 'application/json', "X-CSRF-Token": csrfToken},
+                        signal: controller.signal
+                    });
+                    if (response.status === 200) {
+                        const result = await response.json();
+
+                        const hasDetail = Object.prototype.hasOwnProperty.call(result, "detail");
+                        const detail = result.detail;
+                        // 성공(메시지 없음) 처리
+                        if (!hasDetail || detail === null) { // == null 은 null 또는 undefined 모두 true
+                            alert(result.message);
+                            clearTimeout(timeoutId);
+                            if (!oldEmailInput) {
+                                requestFormElement.style.display = "none";
+                                verifyFormElement.style.display = "block";
+                            }
+
+                        } else {
+                            // 백엔드에서 custom_http_exception_handler 413 JSONResponse
+                            if (detail === "존재하는 이메일") {
+                                errorElement.innerText = `❌ 오류: 이미 존재하는 사용자 이메일입니다.`;
+                            }
+                            if (detail === "동일한 이메일") {
+                                errorElement.innerText = `❌ 오류: 기존과 동일한 이메일입니다.`;
+                            }
+                            if (detail === "유효하지 않은 이메일") {
+                                errorElement.innerText = `❌ 오류: 유효하지 않은 이메일입니다.`;
+                            }
+                            // 432 JSONResponse
+                            if (detail === "이메일 형식 부적합") {
+                                errorElement.innerText = `❌ 오류: 이메일은 @를 포함하여 이메일 형식에 맞게 작성되어야 합니다.`;
+                            }
+                            // 439 JSONResponse
+                            if (detail === "과도한 요청") {
+                                errorElement.innerText = `❌ 오류: 잠시 후에 다시 시도해주세요 (과도한 요청).`;
+                            }
+                            // 600 JSONResponse
+                            if (detail === "이메일 전송 실패") {
+                                errorElement.innerText = `❌ 오류: 이메일 전송 실패(네트워크 혹은 메일서버 오류)`;
+                            }
+                        }
+                    }
+
+
+
+                } catch (err) {
+                    if (err.name === "AbortError") {
+                        if (errorElement) errorElement.textContent = "❌ 요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.";
+                    } else {
+                        if (errorElement) errorElement.textContent = "❌ 네트워크 오류가 발생했습니다.";
+                    }
+                } finally {
+                    requestFormElement.dataset.submitting = "0";
+                    if (requestSubmitBtn) requestSubmitBtn.disabled = false;
+                }
+
+            } catch (err) {
+                if (err.name === "AbortError") {
+                    if (errorElement) errorElement.textContent = "❌ 요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.";
+                } else {
+                    if (errorElement) errorElement.textContent = "❌ 네트워크 오류가 발생했습니다.";
+                }
+            } finally {
+                requestFormElement.dataset.submitting = "0";
+                if (requestSubmitBtn) requestSubmitBtn.disabled = false;
+            }
+        });
+
+        verifyFormElement.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (verifyFormElement.dataset.submitting === "1") return;
+            verifyFormElement.dataset.submitting = "1";
+            if (verifySubmitBtn) verifySubmitBtn.disabled = true;
+            if (errorElement) errorElement.textContent = "";
+            try {
+                const formData = new FormData(verifyFormElement)
+                if (oldEmailInput) {
+                    formData.append("old_email", oldEmailInput.value);
+                } //else {
+                    //formData.append("old_email", "")
+                //}
+                const jsonData = Object.fromEntries(formData.entries());
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+                try {
+                    const actionUrl = verifyFormElement.getAttribute("action") || `/apis/accounts/authcode/verify`;
+                    const response = await fetch(actionUrl, {
+                        method: "POST",
+                        body: JSON.stringify(jsonData),
+                        headers: {'Content-Type': 'application/json', "X-CSRF-Token": csrfToken},
+                        signal: controller.signal
+                    });
+                    if (response.status === 200) {
+                        const result = await response.json();
+
+                        const hasDetail = Object.prototype.hasOwnProperty.call(result, "detail");
+                        const detail = result.detail;
+                        console.log("detail", detail);
+                        // 성공(메시지 없음) 처리
+                        if (!hasDetail || detail === null) { // == null 은 null 또는 undefined 모두 true
+                            // result의 키에 대한 값을 읽는 방법은 두가지: 1. result.message 2. result["verified_token"]
+                            alert(result.message);
+                            clearTimeout(timeoutId);
+                            if (oldEmailInput) {
+                                try { //로그인 과정
+                                    console.log("oldEmailInput.value", oldEmailInput.value);
+                                    formData.delete("old_email");
+                                    formData.delete("type")
+                                    formData.delete("authcode")
+                                    const jsonData = Object.fromEntries(formData.entries());
+                                    const _response = await fetch(LoginURL, {
+                                        method: "POST",
+                                        headers: {"Content-Type": "application/json", "X-CSRF-Token": csrfToken},
+                                        body: JSON.stringify(jsonData)
+                                    });
+                                    try {
+                                        console.log("_response.status", _response.status);
+                                        const _result = await _response.json();
+
+                                        if (_response.ok) {
+                                            window.location.href = `/accounts/account/${UserID}`;
+                                        } else {
+                                            errorElement.innerText = `❌ 오류: ${_result.detail}`;
+                                        }
+                                    } catch (err) {
+                                        console.log("HANDLE_RESPONSE 오류(네트워크, 이메일, 비밀번호, 최종 인증토큰 등의 문제): err", err)
+                                        if (err.name === "AbortError") {
+                                            if (errorElement) errorElement.textContent = "❌ 요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.";
+                                        } else {
+                                            if (errorElement) errorElement.textContent = "❌ 네트워크 오류가 발생했습니다.";
+                                        }
+                                    } finally {
+                                        verifyFormElement.dataset.submitting = "0";
+                                        if (verifySubmitBtn) verifySubmitBtn.disabled = false;
+                                    }
+                                } catch (err) {
+                                    if (err.name === "AbortError") {
+                                        if (errorElement) errorElement.textContent = "❌ 요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.";
+                                    } else {
+                                        if (errorElement) errorElement.textContent = "❌ 네트워크 오류가 발생했습니다.";
+                                    }
+                                } finally {
+                                    verifyFormElement.dataset.submitting = "0";
+                                    if (verifySubmitBtn) verifySubmitBtn.disabled = false;
+                                }
+                            } else {
+                                verifiedTokenInput.value = result["verified_token"];
+                                verifyFormElement.style.display = "none";
+                                accountFormElement.style.display = "block";
+                            }
+
+                        } else {
+                            // 백엔드에서 custom_http_exception_handler 410 JSONResponse
+                            if (detail === "비밀번호 불일치") {
+                                errorElement.innerText = `❌ 오류: 비밀번호가 일치하지 않습니다.`;
+                            }
+                            if (detail === "유효하지 않은 인증코드") {
+                                errorElement.innerText = `❌ 오류: 유효하지 않은 인증 이메일: 만료되었거나 존재하지 않습니다.`;
+                            }
+                            // 410 JSONResponse
+                            if (detail === "인증코드 불일치") {
+                                errorElement.innerText = `❌ 오류: 인증코드가 일치하지 않습니다.`;
+                            }
+                            // 610 JSONResponse
+                            if (detail === "세션 이메일 불일치") {
+                                errorElement.innerText = `❌ 오류: 보낸 이메일과 일치하지 않습니다.)`;
+                            }
+                        }
+                    }
+                } catch (err) {
+                    if (err.name === "AbortError") {
+                        if (errorElement) errorElement.textContent = "❌ 요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.";
+                    } else {
+                        if (errorElement) errorElement.textContent = "❌ 1. 네트워크 오류가 발생했습니다.";
+                    }
+                } finally {
+                    verifyFormElement.dataset.submitting = "0";
+                    if (verifySubmitBtn) verifySubmitBtn.disabled = false;
+                }
+
+
+            } catch (err) {
+                if (err.name === "AbortError") {
+                    if (errorElement) errorElement.textContent = "❌ 요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.";
+                } else {
+                    if (errorElement) errorElement.textContent = "❌ 네트워크 오류가 발생했습니다.";
+                }
+            } finally {
+                verifyFormElement.dataset.submitting = "0";
+                if (verifySubmitBtn) verifySubmitBtn.disabled = false;
+            }
+        });
+
+
+
+
+
+    })();
+
+</script>

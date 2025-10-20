@@ -1,0 +1,18 @@
+.ql-editor img.selected {
+  outline: 2px solid #007bff; /* 선택 표시 */
+}
+
+img[data-float="left"] {
+  float: left;
+  margin: 0 8px 8px 0;
+}
+img[data-float="right"] {
+  float: right;
+  margin: 0 0 8px 8px;
+}
+img[data-float="none"] {
+  float: none;
+  display: inline-block;
+  margin: 0 4px;
+}
+

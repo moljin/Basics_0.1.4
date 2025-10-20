@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>Quill Image Upload (완전판)</title>
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <style>
+    #editor-container { width: 800px; margin: 20px auto; border: 1px solid #ccc; }
+    #editor { height: 500px; overflow-y: auto; padding: 12px; }
+    .ql-editor img.selected { outline: 3px solid #007bff; }
+    #drop-area {
+      position: absolute; left:0; right:0; top:0; bottom:0;
+      display:none; align-items:center; justify-content:center;
+      background: rgba(255,255,255,0.8); border: 2px dashed #aaa;
+      font-size:18px; color:#555; z-index:10;
+    }
+    .toolbar-wrap { padding: 8px; background:#fafafa; border-bottom:1px solid #eee; }
+  </style>
+</head>
+<body>
+  <div id="editor-container">
+    <div class="toolbar-wrap">
+      <!-- Quill toolbar will render here automatically -->
+    </div>
+    <div id="drop-area">여기에 이미지를 드래그하세요</div>
+    <div id="editor"></div>
+  </div>
+
+  <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+  <script>
+    // Quill 초기화
+    const quill = new Quill('#editor', {
+      theme: 'snow',
+      modules: {
+        toolbar: [
+          ['bold','italic','underline'],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          ['image']
+        ]
+      }
+    });
+
+    // 유틸: 현재 에디터 컨테이너 (스크롤 대상)
+    const editorContainer = document.querySelector('#editor').parentNode;
+    const dropArea = document.getElementById('drop-area');
+
+    // ====== 핵심 함수들 ======
+    // 이미지 삽입 후, 이미지가 로드된 다음 새로운 단락 생성, 커서 이동, 그리고 화면 중앙 스크롤
+    async function insertImageAndFocus(url, insertIndex) {
+      // 삽입
+      quill.insertEmbed(insertIndex, 'image', url, 'user');
+
+      // 이미지 DOM이 생성되고 Quill blot이 붙을 때까지 폴링 + load 대기
+      const imgNode = await waitForInsertedImageAtIndex(insertIndex, url);
+
+      // 이미지가 로드되기 전이면 load 이벤트로 대기
+      await waitImageLoad(imgNode);
+
+      // 이미지 바로 다음에 newline 넣고 커서 이동
+      quill.insertText(insertIndex + 1, '\n', 'user');
+      quill.setSelection(insertIndex + 2, 0);
+
+      // 커서를 화면 중앙에 스크롤
+      centerSelectionInView();
+    }
+
+    // 특정 인덱스에 삽입된 이미지 DOM 노드가 생길 때까지 기다림
+    function waitForInsertedImageAtIndex(index, url) {
+      return new Promise((resolve) => {
+        const maxAttempts = 60;
+        let attempts = 0;
+        const tryFind = () => {
+          // 에디터에 있는 모든 이미지 중에서 Blot index가 정확히 'index' 인 것을 찾는다
+          const imgs = Array.from(quill.root.querySelectorAll('img'));
+          for (const img of imgs) {
+            try {
+              const blot = Quill.find(img);
+              const idx = quill.getIndex(blot);
+              if (idx === index && (img.src === url || img.getAttribute('src') === url)) {
+                return resolve(img);
+              }
+            } catch (e) {
+              // 무시
+            }
+          }
+          attempts++;
+          if (attempts > maxAttempts) {
+            // 타임아웃: 그냥 가장 최근 이미지를 반환
+            const imgs2 = quill.root.querySelectorAll('img');
+            return resolve(imgs2[imgs2.length - 1]);
+          }
+          setTimeout(tryFind, 50);
+        };
+        tryFind();
+      });
+    }
+
+    // 이미지 로드 완료 대기 (이미 로드되어있으면 즉시 리턴)
+    function waitImageLoad(img) {
+      return new Promise((resolve) => {
+        if (!img) return resolve(null);
+        if (img.complete && img.naturalWidth !== 0) return resolve(img);
+        const onLoad = () => {
+          cleanup();
+          resolve(img);
+        };
+        const onError = () => {
+          cleanup();
+          resolve(img);
+        };
+        function cleanup() {
+          img.removeEventListener('load', onLoad);
+          img.removeEventListener('error', onError);
+        }
+        img.addEventListener('load', onLoad);
+        img.addEventListener('error', onError);
+        // 안전망
+        setTimeout(() => { cleanup(); resolve(img); }, 5000);
+      });
+    }
+
+    // 현재 선택 위치를 화면 중앙으로 스크롤
+    function centerSelectionInView() {
+      // requestAnimationFrame + timeout 조합으로 렌더 끝날 때 실행
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const sel = quill.getSelection();
+          if (!sel) return;
+          const bounds = quill.getBounds(sel.index);
+          const container = quill.root.parentNode; // #editor의 부모가 스크롤 컨테이너
+          const containerHeight = container.clientHeight;
+          // bounds.top 은 에디터 내부 좌표 (0 기반)
+          const desiredTop = bounds.top + (bounds.height / 2) - (containerHeight / 2);
+          const finalTop = Math.max(0, desiredTop);
+          // 부드럽게 스크롤
+          container.scrollTo({ top: finalTop, behavior: 'smooth' });
+        }, 60);
+      });
+    }
+
+    // 서버 업로드 및 삽입 (파일 하나)
+    async function uploadToServerAndInsert(file) {
+      const form = new FormData();
+      form.append('file', file);
+      try {
+        const resp = await fetch('/upload-image/', { method: 'POST', body: form });
+        const json = await resp.json();
+        if (json && json.url) {
+          // 현재 선택 위치를 잡아서 그 인덱스에 삽입
+          const range = quill.getSelection(true);
+          const insertIndex = (range && typeof range.index === 'number') ? range.index : quill.getLength();
+          await insertImageAndFocus(json.url, insertIndex);
+        } else {
+          console.error('upload failed', json);
+          alert('이미지 업로드 실패');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('이미지 업로드 에러');
+      }
+    }
+
+    // ====== Paste 처리 (캡처 단계에서 가로채기) ======
+    // capture: true 로 등록해서 Quill 내부 paste 로직보다 먼저 처리
+    quill.root.addEventListener('paste', (e) => {
+      // clipboard에 이미지가 있으면 우리가 처리
+      const items = (e.clipboardData && e.clipboardData.items) || [];
+      const imageItems = [];
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        if (it.type && it.type.indexOf('image') === 0) imageItems.push(it.getAsFile());
+      }
+      if (imageItems.length > 0) {
+        // 기본 동작 및 다른 핸들러 중단 → 중복 삽입 방지
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        // 순차 업로드(붙여넣기 순서 유지)
+        (async () => {
+          for (const file of imageItems) {
+            await uploadToServerAndInsert(file);
+          }
+        })();
+      }
+      // 이미지가 없으면 아무것도 안 함 (기본 텍스트 붙여넣기는 Quill이 처리)
+    }, true); // capture = true !!!
+
+    // ====== 드래그 & 드롭 처리 ======
+    // 드래그 오버 / 드래그 리브 등으로 드롭 UI 처리
+    document.querySelector('#editor-container').addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropArea.style.display = 'flex';
+    });
+    document.querySelector('#editor-container').addEventListener('dragleave', (e) => {
+      // 안전하게 숨김
+      dropArea.style.display = 'none';
+    });
+    document.querySelector('#editor-container').addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      dropArea.style.display = 'none';
+      const dt = e.dataTransfer;
+      if (!dt) return;
+      const files = Array.from(dt.files).filter(f => f.type && f.type.startsWith('image/'));
+      if (files.length === 0) return;
+      (async () => {
+        for (const f of files) {
+          await uploadToServerAndInsert(f);
+        }
+      })();
+    });
+
+    // ====== 툴바 이미지 버튼 (파일 선택) ======
+    quill.getModule('toolbar').addHandler('image', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = () => {
+        const file = input.files && input.files[0];
+        if (file) uploadToServerAndInsert(file);
+      };
+      input.click();
+    });
+
+    // ====== Enter 키 처리: 이미지 위 또는 선택된 이미지에서 Enter 시 다음 단락으로 이동하고 중앙 스크롤 ======
+    quill.keyboard.addBinding({ key: 13 }, function(range, context) {
+      // range.index 에 있는 leaf가 이미지인지 확인
+      const [leaf, offset] = quill.getLeaf(range.index);
+      const node = leaf ? leaf.domNode : null;
+      if (node && node.tagName === 'IMG') {
+        const imageIndex = quill.getIndex(leaf);
+        // 줄바꿈 추가 및 포커스 이동
+        quill.insertText(imageIndex + 1, '\n', 'user');
+        quill.setSelection(imageIndex + 2, 0);
+        centerSelectionInView();
+        return false; // Quill 기본 동작 차단
+      }
+      // 또한, 이미지가 '선택된' 상태일 때 (이미지 클릭으로 selected class 부여할 경우)도 처리 가능
+      const selectedImg = quill.root.querySelector('img.selected');
+      if (selectedImg) {
+        try {
+          const blot = Quill.find(selectedImg);
+          const idx = quill.getIndex(blot);
+          quill.insertText(idx + 1, '\n', 'user');
+          quill.setSelection(idx + 2, 0);
+          centerSelectionInView();
+          return false;
+        } catch (e) {
+          // 무시
+        }
+      }
+      return true; // 기본 동작 허용
+    });
+
+    // 이미지 클릭 시 selected 클래스 토글 (선택 시 Enter 처리를 용이하게)
+    quill.root.addEventListener('click', (e) => {
+      if (e.target && e.target.tagName === 'IMG') {
+        quill.root.querySelectorAll('img').forEach(i => i.classList.remove('selected'));
+        e.target.classList.add('selected');
+      } else {
+        quill.root.querySelectorAll('img').forEach(i => i.classList.remove('selected'));
+      }
+    });
+
+    // (선택적) 페이지 로드 시 에디터 컨테이너 스크롤 위치 초기화
+    editorContainer.scrollTop = 0;
+  </script>
+</body>
+</html>

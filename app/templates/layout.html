@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no, maximum-scale=1"/>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    {% block meta_keywords %}
+    {% endblock %}
+
+    {% block meta_description %}
+    {% endblock %}
+
+    {% block meta_robots %}
+    {% endblock %}
+
+    {% block meta_others %}
+    {% endblock %}
+
+    <title>Basics_0.1.2 | {% block title %}{% endblock %}</title>
+
+    {% block main_css %}
+    {% endblock %}
+
+    {% block sub_css %}
+    {% endblock %}
+
+    {% block main_js %}
+    {% endblock %}
+
+    {% block sub_js %}
+    {% endblock %}
+</head>
+
+<body>
+    <header>
+        {% block header %}
+        {% endblock %}
+    </header>
+
+    <main>
+        {% block above_main %}
+        {% endblock %}
+
+        {% block main %}
+        {% endblock %}
+
+        {% block body %}
+            {% block wysiwyg %}
+            {% endblock %}
+
+            {% block body_content %}
+            {% endblock %}
+        {% endblock %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        {% block footer %}
+        {% endblock %}
+    </footer>
+
+    {% block end_common_js %}
+    {% endblock %}
+
+    {% block end_js %}
+    {% endblock %}
+
+</body>
+
+</html>

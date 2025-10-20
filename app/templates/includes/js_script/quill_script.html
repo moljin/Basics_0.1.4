@@ -1,0 +1,847 @@
+<script>/*quill_script: Quill WysiWyg 및 게시글 Submit*/
+
+    // const nextMedia = nextNode ? this.getMedia(nextNode) : null;
+    // 조건 ? 참일 때 실행할 표현식 : 거짓일 때 실행할 표현식
+    /*/// if nextNode 가 True 이면, const nextMedia = this.getMedia(nextNode)이고,
+                         False 이면, const nextMedia = null 이다. ///*/
+
+    const Quill = window.Quill; // CDN 스크립트 사용 시
+
+    //////////// 안전한 ImageResize 등록: 모듈화 전작업 /////////////////////////////////////////////////////////////////////////
+    class ImageResizeModule {
+        constructor(quill, options) {
+            this.quill = quill;
+            this.options = options;
+            //this.registerImageResize();
+        }
+
+        resolveImageResize() {
+            if (typeof window.ImageResize === 'function') return window.ImageResize;
+            if (window.ImageResize && typeof window.ImageResize.default === 'function') return window.ImageResize.default;
+            if (window.ImageResize && typeof window.ImageResize.ImageResize === 'function') return window.ImageResize.ImageResize;
+            return null;
+        }
+    }
+
+    //////////// 클릭/ 빈 단락 삽입 모듈화 //////////////////////////////////////////////////////////////////////////////////////
+    class MediaGapHandler {
+        constructor(quill, options = {}) {
+            this.quill = quill;
+            this.options = Object.assign({gapThreshold: 25}, options);
+            this.container = quill.root;
+
+            this.initEvents();
+            this.observeMutations();
+        }
+
+        // 이벤트 초기화
+        initEvents() {
+            this.container.addEventListener("click", (e) => {
+                const target = e.target;
+
+                // 1. 미디어 직접 클릭 시 → 단락 생성하지 않음
+                if (target.tagName === "IMG" || target.tagName === "IFRAME" || target.tagName === "VIDEO") {
+                    return;
+                }
+
+                const rect = this.container.getBoundingClientRect();
+                const clickY = e.clientY - rect.top + this.container.scrollTop;
+                const children = [...this.container.children];
+
+                for (let i = 0; i < children.length; i++) {
+                    const node = children[i];
+                    const media = this.getMedia(node);
+
+                    if (media) {
+                        const mediaRect = media.getBoundingClientRect();
+                        const mediaTop = mediaRect.top - rect.top + this.container.scrollTop;
+                        const mediaBottom = mediaRect.bottom - rect.top + this.container.scrollTop;
+
+                        // ▷ 미디어 위쪽 여백
+                        if (
+                            clickY >= mediaTop - this.options.gapThreshold &&
+                            clickY <= mediaTop
+                        ) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            this.insertParagraph(node, "before");
+                            return;
+                        }
+
+                        // ▷ 미디어 사이 여백
+                        const nextNode = children[i + 1];
+                        const nextMedia = nextNode ? this.getMedia(nextNode) : null;
+                        if (nextMedia) {
+
+                            const nextRect = nextMedia.getBoundingClientRect();
+                            const nextTop = nextRect.top - rect.top + this.container.scrollTop;
+
+                            if (clickY > mediaBottom && clickY < nextTop) {
+                                e.preventDefault();
+                                e.stopPropagation();
+
+                                // 중간에 빈 단락이 없는 경우에만 생성
+                                if (
+                                    !node.nextElementSibling ||
+                                    node.nextElementSibling === nextNode
+                                ) {
+                                    this.insertParagraph(node, "after");
+                                }
+                                return;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 미디어 요소(img, iframe, video) 탐색
+        getMedia(node) {
+            if (!node || node.nodeType !== 1) return null; // 요소 노드만
+            if (node.matches("img, iframe, video")) return node; // node 자체가 미디어면 그대로 반환
+            return node.querySelector("img, iframe, video"); // 아니면 자손에서 탐색
+        }
+
+        // MutationObserver: 미디어 삽입 감지
+        observeMutations() {
+            const observer = new MutationObserver((mutations) => {
+                for (const mutation of mutations) {
+                    for (const node of mutation.addedNodes) {
+                        if ((node.tagName === "P" && this.getMedia(node)) ||
+                            (node.classList && node.classList.contains("ql-video"))
+                        ) {// 미디어 삽입 시 → 아래에 빈 단락 추가
+                            if (!node.nextElementSibling) {
+                                const newPara = document.createElement("p");
+                                newPara.innerHTML = "<br>";
+                                node.parentNode.appendChild(newPara);
+                                this.scrollToElement(newPara);
+                            }
+                        }
+                    }
+                }
+            });
+
+            observer.observe(this.container, {childList: true});
+        }
+
+        // 단락 삽입 함수
+        insertParagraph(refNode, position) {
+            let newPara;
+
+            if (position === "before") {
+                if (
+                    !refNode.previousElementSibling ||
+                    refNode.previousElementSibling.innerText.trim() !== ""
+                ) {
+                    newPara = document.createElement("p");
+                    newPara.innerHTML = "<br>";
+                    refNode.parentNode.insertBefore(newPara, refNode);
+                }
+            } else if (position === "after") {
+                if (
+                    !refNode.nextElementSibling ||
+                    refNode.nextElementSibling.innerText.trim() === ""
+                ) {
+                    newPara = document.createElement("p");
+                    newPara.innerHTML = "<br>";
+                    refNode.parentNode.insertBefore(newPara, refNode.nextSibling);
+                }
+            }
+
+            if (newPara) {
+                this.placeCursor(newPara);
+            }
+        }
+
+        // 커서 위치 지정
+        placeCursor(paragraph) {
+            const range = document.createRange();
+            const sel = window.getSelection();
+            range.setStart(paragraph, 0);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+
+            this.scrollToElement(paragraph);
+        }
+
+        // 커서가 보이도록 스크롤 이동
+        scrollToElement(el) {
+            setTimeout(() => {
+                el.scrollIntoView({behavior: "smooth", block: "center"});
+            }, 30);
+        }
+    } ///클릭/ 빈 단락 삽입 모듈화 end //////////////////////////////////////////////////////////////////////////////////////////
+
+
+    // 툴바 커스터마이징/update page에서 기존 content 가져오기
+    class QuillCustomizer {
+        constructor(quill, options) {
+            this.quill = quill;
+            this.options = options;
+
+            this.toolbarDesign();
+            this.restoreEditorContent();
+        }
+
+        toolbarDesign() {
+            const toolbarElement = document.querySelector("#quill-container > div.ql-toolbar.ql-snow");
+            if (toolbarElement) {
+                // ////////////////// 반응형 작업
+                const groupText = document.querySelector("#quill-container > div.ql-toolbar.ql-snow > span:nth-child(1)");
+                const groupBlock = document.querySelector("#quill-container > div.ql-toolbar.ql-snow > span:nth-child(2)");
+                const groupInsert = document.querySelector("#quill-container > div.ql-toolbar.ql-snow > span:nth-child(3)");
+                const groupHeader = document.querySelector("#quill-container > div.ql-toolbar.ql-snow > span:nth-child(4)");
+                const groupListIndent = document.querySelector("#quill-container > div.ql-toolbar.ql-snow > span:nth-child(5)");
+                const groupScript = document.querySelector("#quill-container > div.ql-toolbar.ql-snow > span:nth-child(6)");
+                const groupExtra = document.querySelector("#quill-container > div.ql-toolbar.ql-snow > span:nth-child(7)");
+                groupText.className += " group-text";
+                groupBlock.className += " group-insert";
+                groupInsert.className += " group-header";
+                groupHeader.className += " group-list-indent";
+                groupListIndent.className += " group-block"
+                groupScript.className += " group-script";
+                groupExtra.className += " group-extra";
+
+                const dropDownElement = `<div class="dropdown-wrapper">
+                                          <div class="dropdown-toggle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3.94 15.75"><g><path d="M12.28,7.69a1.92,1.92,0,0,1-1.39-.58,2,2,0,0,1-.58-1.39,1.92,1.92,0,0,1,.58-1.39,2,2,0,0,1,1.39-.58,1.92,1.92,0,0,1,1.39.58,2,2,0,0,1,.58,1.39,1.92,1.92,0,0,1-.58,1.39,2,2,0,0,1-1.39.58Zm0,2a1.92,1.92,0,0,1,1.39.58,2,2,0,0,1,.58,1.39A1.92,1.92,0,0,1,13.67,13a2,2,0,0,1-1.39.58A1.92,1.92,0,0,1,10.89,13a2,2,0,0,1-.58-1.39,2,2,0,0,1,2-2Zm0,5.9a1.92,1.92,0,0,1,1.39.58,2,2,0,0,1,.58,1.39,1.92,1.92,0,0,1-.58,1.39,2,2,0,0,1-1.39.58,1.92,1.92,0,0,1-1.39-.58,2,2,0,0,1-.58-1.39,1.92,1.92,0,0,1,.58-1.39,1.94,1.94,0,0,1,1.39-.58Z" transform="translate(-10.31 -3.75)"></path></g></svg></div>
+                                          <div class="dropdown-menu"></div>
+                                        </div>`
+                toolbarElement.insertAdjacentHTML("beforeend", dropDownElement); // //////////////// 반응형 end
+
+            }
+        }
+
+        restoreEditorContent() {
+            if (this.options.objectId && this.options.initialContent) {
+                try {
+                    this.quill.root.innerHTML = this.options.initialContent;
+                } catch (e) {
+                    console.warn("콘텐츠 복원 중 오류 발생:", e);
+                }
+            }
+        }
+    }
+
+    const imageResizeModule = new ImageResizeModule();
+    const ImageResize = imageResizeModule.resolveImageResize();
+    if (typeof Quill !== 'undefined') {
+        Quill.register("modules/imageResize", ImageResize, true); // true는 중복 등록 방지
+        Quill.register("modules/mediaGapHandler", MediaGapHandler);
+        Quill.register("modules/quillCustomizer", QuillCustomizer);
+    }
+
+
+    //////////////// 이미지 옆에 텍스트를 정렬 ///////////////////////////////////////////////////////////////////////////////////
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    const toolbarOptions = [
+        ['bold', 'italic', 'underline', 'strike'],
+        ['link', 'image', 'video'],
+        [{'header': 1}, {'header': 2}, {'header': 3}],
+        [{'list': 'ordered'}, {'list': 'bullet'}, {'list': 'check'}, {'indent': '-1'}, {'indent': '+1'}],
+        ['blockquote', 'code-block'],
+        [{'script': 'sub'}, {'script': 'super'}, 'formula'],
+        [{'color': []}, {'background': []}, {'align': ['', 'center', 'right', 'justify']}],
+    ];
+
+    ///////  Quill 초기화 /////////////////////////////////////////////////////////////////////////////////////////////////////
+    const quillModulesConfig = {
+        toolbar: {
+
+            container: toolbarOptions, //"#toolbar-container",
+            handlers: {
+                image: imageInsertByToolbarButton,
+                video: videoInsertByToolbarButton,
+            }
+        },
+        mediaGapHandler: {
+            gapThreshold: 25, // 여백 감지 px 값 (기본: 12)
+        },
+        imageResize: {
+            modules: ['Resize', 'DisplaySize', 'Toolbar'],
+            displayStyles: {backgroundColor: 'black', border: 'none', color: 'white'},
+            handleStyles: {backgroundColor: '#fff', border: '1px solid #777', width: '10px', height: '10px'}
+        },
+        quillCustomizer: {
+        objectId: typeof REAL_OBJECT_ID !== "undefined" ? REAL_OBJECT_ID : null,
+        initialContent: typeof EDITOR_INNERHTML_CONTENT !== "undefined" ? EDITOR_INNERHTML_CONTENT : null
+        },
+
+    };
+
+    const quill = new Quill('#editor-container', {
+        theme: 'snow',
+        placeholder: '여기에 내용을 입력하세요...',
+        modules: quillModulesConfig
+    }); ///Quill 초기화 end/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // 반응형 범위 설정
+    const breakPoints = [
+        {width: 1030, group: "group-extra"},
+        {width: 920, group: "group-script"},
+        {width: 810, group: "group-block"},
+        {width: 710, group: "group-list-indent"},
+        {width: 510, group: "group-header"},
+    ];
+
+    const strikeSVG = document.querySelector("#quill-container > div.ql-toolbar.ql-snow > span.ql-formats.group-text > button.ql-strike > svg");
+
+    const dropdownWrapper = document.querySelector(".dropdown-wrapper");
+    const dropdownMenu = dropdownWrapper.querySelector(".dropdown-menu");
+
+    const dropdownToggle = document.querySelector(".dropdown-toggle");
+    const dropdownToggleIcon = dropdownToggle.querySelector("svg");
+    const dropdownToggleIconPath = dropdownToggleIcon.querySelector("path");
+
+
+    function updateToolbar() {
+        const winWidth = window.innerWidth;
+        // 초기화
+        strikeSVG.setAttribute('viewBox', '0 0 16 16'); // 취소선 버튼 크기
+        dropdownMenu.innerHTML = "";
+        dropdownWrapper.style.display = "none";
+
+        breakPoints.forEach(bp => {
+            const group = document.querySelector(`#quill-container > div.ql-toolbar.ql-snow .${bp.group}`);
+            if (!group) return;
+
+            if (winWidth < bp.width) {
+                dropdownWrapper.style.display = "block";
+                dropdownToggle.style.display = "block";
+                group.style.display = "none";
+
+                const clone = group.cloneNode(true); // dropdown으로 복제 이동
+                clone.style.display = "flex";
+                dropdownMenu.appendChild(clone);
+            } else {
+                dropdownToggle.style.display = "block";
+                group.style.display = "inline-flex";
+            }
+        });
+    }
+
+    // 드롭다운 토글
+    window.addEventListener("click", (e) => {
+        if (window.innerWidth < 1030 ) {
+            if (e.target === dropdownToggle || e.target === dropdownToggleIcon || e.target === dropdownToggleIconPath) {
+                dropdownWrapper.classList.toggle("open");
+            } else {
+                dropdownWrapper.classList.remove("open");
+            }
+
+        }
+    });
+
+    window.addEventListener("resize", function () {
+        if (window.innerWidth<1030) {
+            dropdownToggle.style.display = "block";
+            updateToolbar()
+        } else {
+            dropdownWrapper.classList.remove("open");
+            dropdownToggle.style.display = "none";
+            document.querySelector(`#quill-container > div.ql-toolbar.ql-snow .group-header`).style.display = "inline-flex";
+            document.querySelector(`#quill-container > div.ql-toolbar.ql-snow .group-list-indent`).style.display = "inline-flex";
+            document.querySelector(`#quill-container > div.ql-toolbar.ql-snow .group-block`).style.display = "inline-flex";
+            document.querySelector(`#quill-container > div.ql-toolbar.ql-snow .group-script`).style.display = "inline-flex";
+            document.querySelector(`#quill-container > div.ql-toolbar.ql-snow .group-extra`).style.display = "inline-flex";
+        }
+    });
+    updateToolbar(); // 반응형 end
+
+    const headers = {};
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+    if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
+
+    ////// 이미지 삽입 관련 시작 ////////////////////////////////////////////////////////////////////////////////////////////////
+    class QuillImageVideoHandler {
+        constructor(quill, UploadUrl=null) {
+            this.quill = quill;
+            this.UploadUrl = UploadUrl; //videoUpload와 통합
+            this.mediaGapHandler = new MediaGapHandler(quill); //videoUpload와 통합
+        }
+
+        // 서버에 이미지 파일을 업로드하는 비동기 메서드
+        async imageUploadToServer(file) { //videoUpload와 통합
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 20000);
+            const formData = new FormData();
+            formData.append('quillsimage', file);
+            const response = await fetch(this.UploadUrl, {
+                method: 'POST',
+                body: formData,
+                headers: headers,
+                signal: controller.signal,
+            });
+            clearTimeout(timeoutId);
+            if (!response.ok) {
+                throw new Error('Upload failed: ' + response.status);
+            }
+            return response.json();
+        }
+
+        // 서버에 동영상 파일을 업로드하는 비동기 메서드
+        async videoUploadToServer(file) { //videoUpload와 통합
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 20000);
+            const formData = new FormData();
+            formData.append('quillsvideo', file);
+            const response = await fetch(this.UploadUrl, {
+                method: 'POST',
+                body: formData,
+                headers: headers,
+                signal: controller.signal,
+            });
+            clearTimeout(timeoutId);
+            if (!response.ok) {
+                throw new Error('Upload failed: ' + response.status);
+            }
+            return response.json();
+        }
+
+
+        //
+        async imageVideoInsertHandler(file, type) {
+            console.log("file: ", file)
+            console.log("file.type: ", file.type)
+            console.log("file.type.startsWith('image/'): ", file.type.startsWith('image/'))
+            console.log("type: ", type)
+
+            if (file && typeof file.type === 'string' && file.type.startsWith('image/')) {
+                try {
+                    const response = await this.imageUploadToServer(file);
+                    if (response && response.url) {
+                        const range = this.quill.getSelection(true);
+                        const insertIndex = (range && typeof range.index === 'number') ? range.index : this.quill.getLength();
+                        this.quill.insertEmbed(insertIndex, type, response.url, 'user');
+
+                        const newCursorIndex = insertIndex + 2;
+                        // 이미지 뒤에 빈 단락 자동 추가
+                        this.quill.insertText(insertIndex + 1, "\n", 'user');
+                        this.quill.setSelection(newCursorIndex, 0);
+
+                        // 새로 생긴 커서가 있는 빈 단락의 p 태그를 찾아 커서 위치를 조정
+                        const [line, offset] = this.quill.getLine(newCursorIndex);
+                        const pTag = line.domNode.tagName.toLowerCase() === 'p' ? line.domNode : null;
+
+                        this.mediaGapHandler.placeCursor(pTag);
+
+                    } else {
+                        alert('이미지 업로드 실패');
+                    }
+                } catch (e) {
+                    alert(`이미지 업로드 오류: ${e.message || e}`);
+                }
+            } else {
+                try {
+                    const response = await this.videoUploadToServer(file);
+                    if (response && response.url) {
+                        const range = this.quill.getSelection(true) || { index: quill.getLength(), length: 0 };
+                        const insertIndex = (range && typeof range.index === 'number') ? range.index : this.quill.getLength();
+                        this.quill.insertEmbed(insertIndex, type, response.url, 'user');
+
+                        const newCursorIndex = insertIndex + 1; // 이미지에서는 2, 왜 다르지?
+                        // 이미지 뒤에 빈 단락 자동 추가는 아래가 있어야 하지만, 동영상은 없어도 된다. 이유는 먼지 잘모르겠다. ㅎㅎ
+                         this.quill.insertText(insertIndex + 1, "\n", 'user');
+                        this.quill.setSelection(newCursorIndex, 0, 'user');
+
+                        // 새로 생긴 커서가 있는 빈 단락의 p 태그를 찾아 커서 위치를 조정
+                        const [line, offset] = this.quill.getLine(newCursorIndex);
+                        const pTag = line.domNode.tagName.toLowerCase() === 'p' ? line.domNode : null;
+                        this.mediaGapHandler.placeCursor(pTag);
+
+                    } else {
+                        alert('동영상 업로드 실패');
+                    }
+                } catch (e) {
+                    alert(`동영상 업로드 오류: ${e.message || e}`);
+                }
+            }
+
+        }
+
+    }
+
+
+    //////////////////////* 툴바를 통해 이미지 삽입과 저장 후 src 받아오기 *//////////////////////////////////////////////////////////
+    // 이미지 삽입 로직을 처리하는 메인 로직
+    const quillImageHandler = new QuillImageVideoHandler(quill, IMAGE_UPLOAD_URL);
+    async function imageInsertByToolbarButton() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = async () => {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            await quillImageHandler.imageVideoInsertHandler(file, 'image');
+        };
+        input.click();
+    }
+
+    // 동영상 삽입 로직을 처리하는 메인 로직
+    const quillVideoHandler = new QuillImageVideoHandler(quill, VIDEO_UPLOAD_URL);
+    async function videoInsertByToolbarButton() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'video/*';
+        input.onchange = async () => {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            await quillVideoHandler.imageVideoInsertHandler(file, 'video');
+        };
+        input.click();
+    }
+
+
+    /////////////// 캡쳐 붙여넣기, 드래그 드랍 삽입과 저장 후 src 받아오기 //////////////////////////////////////////////////////////////
+    //// 붙여넣기 (capture 단계에서 가로채기) — 화면 캡쳐 중복 삽입 방지 ////////////////////////////////////////////////////////////////
+    quill.root.addEventListener('paste', (e) => {
+        //// 텍스트 복사 후 평문 붙여넣기: paste 이벤트를 가로채서 text/plain만 삽입 //////////////////////
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+        const range = quill.getSelection(true);
+        quill.insertText(range.index, text, 'user');
+        quill.setSelection(range.index + text.length, 0, 'user');
+        ////////////////////////// end
+
+        //// 화면 캡쳐 시작 //////////////////////
+        const items = (e.clipboardData && e.clipboardData.items) || [];
+        const imageFiles = [];
+        for (let i = 0; i < items.length; i++) {
+            const it = items[i];
+            if (it.type && it.type.indexOf('image') === 0) {
+                const f = it.getAsFile();
+                if (f) imageFiles.push(f);
+            }
+        }
+        if (imageFiles.length > 0) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            (async () => {
+                for (const file of imageFiles) {
+                    await quillImageHandler.imageVideoInsertHandler(file, "image");
+                }
+            })();
+        }
+    }, true); // capture = true
+
+
+    //// 드래그&드롭 처리 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    const dropArea = document.getElementById('drop-area');
+    const quillContainer = document.getElementById('quill-container');
+    if (quillContainer) {
+        quillContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (dropArea) dropArea.style.display = 'flex';
+        });
+        quillContainer.addEventListener('dragleave', (e) => {
+            if (!quillContainer.contains(e.relatedTarget)) {
+                if (dropArea) dropArea.style.display = 'none';
+            }
+        });
+        quillContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            if (dropArea) dropArea.style.display = 'none';
+            const dt = e.dataTransfer;
+            if (!dt) return;
+            const files = Array.from(dt.files).filter(f => f.type && f.type.startsWith('image/'));
+            if (!files.length) return;
+            (async () => {
+                for (const file of files) {
+                    await quillImageHandler.imageVideoInsertHandler(file, "image");
+                }
+            })();
+        });
+    }
+
+
+    //// MutationObserver: 기존 로직 유지 (이미지 삭제 후보 추적: Undo) ////////////////////////////////////////////////////////////////////////
+    const removedImageUrls = new Set();
+    function collectImgSrcsFromNode(node) {
+        const urls = [];
+        if (node && node.nodeType === Node.ELEMENT_NODE) {
+            const el = node;
+            if (el.tagName && el.tagName.toUpperCase() === 'IMG') {
+                const src = el.getAttribute('src');
+                if (src) urls.push(src);
+            }
+            const imgs = el.querySelectorAll ? el.querySelectorAll('img') : [];
+            for (const img of imgs) {
+                const src = img.getAttribute('src');
+                if (src) urls.push(src);
+            }
+        }
+        return urls;
+    }
+
+    const imageObserver = new MutationObserver((mutations) => {
+        const toMark = new Set(), toUnmark = new Set();
+        for (const m of mutations) {
+            if (m.type === 'childList') {
+                for (const node of m.removedNodes) {
+                    for (const url of collectImgSrcsFromNode(node)) {
+                        removedImageUrls.add(url);
+                        toMark.add(url);
+                    }
+                }
+                for (const node of m.addedNodes) {
+                    for (const url of collectImgSrcsFromNode(node)) {
+                        if (removedImageUrls.has(url)) {
+                            removedImageUrls.delete(url);
+                            toUnmark.add(url);
+                        }
+                    }
+                }
+            } else if (m.type === 'attributes' && m.attributeName === 'src') {
+                const el = m.target;
+                if (el && el.tagName && el.tagName.toUpperCase() === 'IMG') {
+                    const oldUrl = m.oldValue || null;
+                    const newUrl = el.getAttribute('src') || null;
+                    if (oldUrl && oldUrl !== newUrl) {
+                        removedImageUrls.add(oldUrl);
+                        toMark.add(oldUrl);
+                    }
+                    if (newUrl && removedImageUrls.has(newUrl)) {
+                        removedImageUrls.delete(newUrl);
+                        toUnmark.add(newUrl);
+                    }
+                }
+            }
+        }
+
+        const marks = Array.from(toMark), unmarks = Array.from(toUnmark);
+        (async () => {
+            try {
+                if (marks.length > 0) {
+                    await fetch(imageMarkObserverURL, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken},
+                        body: JSON.stringify(marks)
+                    });
+                }
+                if (unmarks.length > 0) {
+                    await fetch(imageUnmarkObserverURL, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken},
+                        body: JSON.stringify(unmarks)
+                    });
+                }
+            } catch (err) {
+                console.error('Image mark/unmark failed:', err);
+            }
+        })();
+    });
+
+    // 감시 시작: 에디터 컨테이너가 존재할 때만
+    (function startImageObserver() {
+        const container = document.getElementById('editor-container');
+        if (!container) {
+            console.warn('[videoObserver] #editor-container not found.');
+            return;
+        }
+        imageObserver.observe(container, {
+            childList: true, subtree: true, attributes: true, attributeFilter: ['src'], attributeOldValue: true
+        });
+    })();
+
+    /*imageObserver.observe(document.getElementById('editor-container'), {
+        childList: true, subtree: true, attributes: true, attributeFilter: ['src'], attributeOldValue: true
+    }); */
+
+
+    //// MutationObserver: 기존 로직 유지 (동영상 삭제 후보 추적: Undo) ////////////////////////////////////////////////////////////////////////
+    const removedVideoUrls = new Set();
+
+    function collectVideoSrcsFromNode(node) {
+        const urls = new Set();
+
+        if (!(node instanceof Element)) return [];
+
+        const push = (u) => {
+            if (typeof u === 'string' && u.trim().length > 0) urls.add(u);
+        };
+
+        // 1) 전달된 노드가 IFRAME 자체일 수 있음
+        if (node.tagName && node.tagName.toUpperCase() === 'IFRAME') {
+            push(node.getAttribute('src')); // <iframe src="...">
+            node.querySelectorAll('source[src]').forEach(s => push(s.getAttribute('src'))); // <iframe><source src="..."></video>
+        }
+
+        // 2) 하위에 존재하는 모든 VIDEO/ SOURCE를 스캔
+        node.querySelectorAll('video[src]').forEach(v => push(v.getAttribute('src')));
+        node.querySelectorAll('video source[src]').forEach(s => push(s.getAttribute('src')));
+        return Array.from(urls);
+    }
+
+    const videoObserver = new MutationObserver((mutations) => {
+        const toMark = new Set();
+        const toUnmark = new Set();
+
+        for (const m of mutations) {
+            if (m.type === 'childList') {
+                // 제거된 노드에서 비디오 URL 수집 -> mark 후보
+                for (const node of m.removedNodes) {
+                    for (const url of collectVideoSrcsFromNode(node)) {
+                        removedVideoUrls.add(url);
+                        toMark.add(url);
+                    }
+                }
+                // 추가된 노드에서 비디오 URL 수집 -> 기존 제거 후보면 unmark
+                for (const node of m.addedNodes) {
+                    for (const url of collectVideoSrcsFromNode(node)) {
+                        if (removedVideoUrls.has(url)) {
+                            removedVideoUrls.delete(url);
+                            toUnmark.add(url);
+                        }
+                    }
+                }
+            } else if (m.type === 'attributes' && m.attributeName === 'src') {
+                const el = m.target;
+                const tag = el && el.tagName ? el.tagName.toUpperCase() : '';
+
+                // src 속성이 달라지는 대상: <video>, <source> (iframe 등은 제외)
+                if (tag === 'VIDEO' || tag === 'SOURCE') {
+                    const oldUrl = m.oldValue || null;
+                    const newUrl = el.getAttribute('src') || null;
+
+                    if (oldUrl && oldUrl !== newUrl) {
+                        removedVideoUrls.add(oldUrl);
+                        toMark.add(oldUrl);
+                    }
+                    if (newUrl && removedVideoUrls.has(newUrl)) {
+                        removedVideoUrls.delete(newUrl);
+                        toUnmark.add(newUrl);
+                    }
+                }
+            }
+        }
+
+        const marks = Array.from(toMark);
+        const unmarks = Array.from(toUnmark);
+
+        if (marks.length === 0 && unmarks.length === 0) return;
+
+        (async () => {
+            try {
+                if (marks.length > 0 && typeof videoMarkObserverURL === 'string') {
+                    await fetch(videoMarkObserverURL, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken},
+                        body: JSON.stringify(marks)
+                    });
+                }
+                if (unmarks.length > 0 && typeof videoUnmarkObserverURL === 'string') {
+                    await fetch(videoUnmarkObserverURL, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken},
+                        body: JSON.stringify(unmarks)
+                    });
+                }
+            } catch (err) {
+                console.error('Video mark/unmark failed:', err);
+            }
+        })();
+    });
+
+    // 감시 시작: 에디터 컨테이너가 존재할 때만
+    (function startVideoObserver() {
+        const container = document.getElementById('editor-container');
+        if (!container) {
+            console.warn('[videoObserver] #editor-container not found.');
+            return;
+        }
+        videoObserver.observe(container, {
+            childList: true, subtree: true, attributes: true, attributeFilter: ['src'], attributeOldValue: true
+        });
+    })();
+
+
+
+    //////////// submit ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    (() => {
+        const formElement = document.getElementById("submitForm");
+        if (!formElement) return;
+        const submitBtn = formElement.querySelector('[type="submit"]');
+        const errorEl = document.getElementById("errorTag");
+        formElement.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (formElement.dataset.submitting === "1") return;
+            formElement.dataset.submitting = "1";
+            if (submitBtn) submitBtn.disabled = true;
+            if (errorEl) errorEl.textContent = "";
+            try {
+                const hasText = quill.getText().trim().length > 0;
+                const hasImage = !!quill.root.querySelector("img");
+                if (!hasText && !hasImage) throw new Error("본문을 입력해 주세요.");
+                //const hasVideo = !!quill.root..querySelector("video");
+                //if (!hasText && !hasImage && !hasVideo) throw new Error("본문을 입력해 주세요.");
+
+                const fd = new FormData(formElement);
+                if (fd.has("content")) fd.delete("content");
+                fd.append("content", quill.root.innerHTML.trim());
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 20000);
+                if (REAL_OBJECT_ID) await quillsPatch(REAL_OBJECT_ID); else await quillsPost();
+                clearTimeout(timeoutId);
+
+                async function quillsPatch() {
+                    const actionUrl = formElement.getAttribute("action") || UpdateActionURL;
+                    const res = await fetch(actionUrl, {method: "PATCH", body: fd, headers, signal: controller.signal});
+                    await handleResponse(res);
+                }
+
+                async function quillsPost() {
+                    const actionUrl = formElement.getAttribute("action") || CreateActionURL;
+                    const res = await fetch(actionUrl, {method: "POST", body: fd, headers, signal: controller.signal});
+                    await handleResponse(res);
+                }
+
+                async function handleResponse(response) {
+                    const contentType = response.headers.get("content-type") || "";
+                    let res_obj = null;
+                    if (contentType.includes("application/json")) res_obj = await response.json(); else {
+                        const text = await response.text();
+                        res_obj = {message: text};
+                    }
+                    if (!response.ok) {
+                        const msg = (res_obj && (res_obj.detail || res_obj.message || res_obj.error)) || `알 수 없는 오류가 발생했습니다. (HTTP ${response.status})`;
+                        throw new Error(msg);
+                    }
+                    if (res_obj && res_obj.id) {
+                        //window.location.replace(`${DetailBaseURL}/${res_obj.id}`);
+                        window.location.href = `${DetailBaseURL}/${res_obj.id}`;
+                        return;
+                    }
+                    if (res_obj && res_obj.redirect_url) {
+                        window.location.href = res_obj.redirect_url;
+                        return;
+                    }
+                    const locationHeader = response.headers.get("location");
+                    if (locationHeader) {
+                        window.location.href = locationHeader;
+                        return;
+                    }
+                }
+
+                if (errorEl) errorEl.textContent = "저장은 되었지만, 이동할 경로를 알 수 없습니다.";
+            } catch (err) {
+                if (`${err}` === "Error: 본문을 입력해 주세요.") { // if (!hasText && !hasImage) throw new Error("본문을 입력해 주세요.");
+                    errorEl.innerText = `⚠️주의: 본문을 입력해 주세요.`;
+                } else {
+                    const msg = err?.name === "AbortError" ? "요청 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해 주세요." : err?.message || String(err);
+                    if (errorEl) errorEl.textContent = `❌ 오류: ${msg}`;
+                }
+            } finally {
+                formElement.dataset.submitting = "0";
+                if (submitBtn) submitBtn.disabled = false;
+            }
+        });
+    })();
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+</script>

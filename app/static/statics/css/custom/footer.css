@@ -1,0 +1,15 @@
+.footer {
+    background-color: #5758BB;
+    height: 60px;
+}
+
+.footer .main-container {
+    font-size: 18px;
+    width: 100%;
+    height: 100%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+

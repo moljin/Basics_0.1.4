@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if current_user %}
+         회원정보 수정
+    {% else %}
+        회원등록
+    {% endif %}
+{% endblock %}
+
+{% block sub_css %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}/statics/css/custom/form.css">
+    <style>
+        .verify-container {display: flex; justify-content: space-between;}
+        .verify-container .input-container {width: 80%;}
+        .verify-container .btn-container {width: 18%; margin-top: 28px;}
+        .verify-container .btn-container .auth-btn {height: 40px; font-size: 18px;}
+    </style>
+{% endblock %}
+
+{% block sub_js %}
+    <script>
+        const UserID = {{ (current_user.id if current_user else none) | tojson }};
+        const Username= {{ (current_user.username if current_user else '') | tojson }};
+        const Email= {{ (current_user.email if current_user else '') | tojson }};
+
+        const RegisterURL = "/apis/accounts/register";
+        const UpdateURL = {{ ("/apis/accounts/" + (current_user.id | string) if current_user else none) | tojson }};
+        const LoginURL = "/apis/auth/login";
+        window.AllParams = {
+            UserID: {{ (current_user.id if current_user else none) | tojson }},
+            Username: {{ (current_user.username if current_user else '') | tojson }},
+            Email: {{ (current_user.email if current_user else '') | tojson }},
+
+            RegisterURL: "/apis/accounts/register",
+            UpdateURL: {{ ("/apis/accounts/" + (current_user.id | string) if current_user else none) | tojson }},
+            LoginURL: "/apis/auth/login",
+        }
+
+
+
+    </script>
+{% endblock %}
+
+{% block main %}
+    <section class="main-container">
+        <article class="contents-container register-container">
+            {% if current_user %}
+                <h2>회원정보변경</h2>
+            {% else %}
+                <h2>회원 등록</h2>
+            {% endif %}
+            <div class="uk-margin" id="errorTag"><!--js에서 넘어온 오류 메시지를 넣는다.--></div>
+            {% if current_user %}
+                {% if current_user.img_path %}
+                    <img src="{{ STATIC_URL }}/{{ current_user.img_path }}" style="width: 100%" alt="Article Image">
+                {% elif not current_user.img_path %}
+                    <img src="{{ STATIC_URL }}/media/default/blog_default.png" style="width: 100%" alt="Article Image">
+                {% endif %}
+            {% endif %}
+
+            <form id="accountForm" enctype="multipart/form-data">
+                {% if current_user %}
+                    <div class="uk-margin">
+                        <input id="user_id" type="hidden" name="user_id" value="{{ current_user.id }}">
+                    </div>
+                {% endif %}
+                <div class="uk-margin">
+                    <div>닉네임</div>
+                    {% if current_user %}
+                        <input class="uk-input" id="username" type="text" name="username" value="{{ current_user.username }}">
+                    {% else %}
+                        <input class="uk-input" id="username" type="text" name="username" required>
+                    {% endif %}
+                </div>
+                <div class="uk-margin">
+                    <label for="imagefile" class="form-label">Profile Image</label>
+                    <input type="file" accept="image/*" class="form-control" id="imagefile" name="imagefile"/>
+                </div>
+                <div class="uk-margin">
+                    <div>이메일</div>
+                    {% if current_user %}
+                        <input class="uk-input" id="email" type="text" name="email" value="{{ current_user.email }}">
+                    {% else %}
+                        <input class="uk-input" id="email" type="text" name="email" required>
+                    {% endif %}
+                </div>
+                {% if current_user %}
+                    <div class="uk-margin">
+                        <div>비밀번호</div>
+                        <input class="uk-input" id="password" type="password" name="password">
+                    </div>
+                {% else %}
+                    <div class="uk-margin">
+                        <div>비밀번호</div>
+                        <input class="uk-input" id="password" type="password" name="password" required>
+                    </div>
+                    <div class="uk-margin">
+                        <div>비밀번호 확인</div>
+                        <input class="uk-input" id="confirmPassword" type="password" name="confirmPassword" required>
+                    </div>
+                {% endif %}
+
+                <div class="uk-margin">
+                    {% if current_user %}
+                        <button id="register-btn" class="register-btn" type="submit">정보 변경</button>
+                    {% else %}
+                        <button id="register-btn" class="register-btn" type="submit">가입 신청</button>
+                    {% endif %}
+                </div>
+            </form>
+            {% include 'includes/js_script/accounts_script.html' %}
+        </article>
+
+
+    </section>
+{% endblock %}

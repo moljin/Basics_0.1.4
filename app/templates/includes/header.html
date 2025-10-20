@@ -1,0 +1,23 @@
+<div class="header">
+    <nav class="nav-container">
+        <div class="uk-navbar-left logo">
+            <a href="/">LOGO</a>
+        </div>
+        <div class="menu">
+            <div class="uk-navbar-right">
+                {% if not current_user %}
+                    <div class="menu-item"><a href="/accounts/register">Register</a></div>
+                {% endif %}
+                <div class="menu-item"><a href="/index">참고</a></div>
+                <div class="menu-item"><a href="/lotto/random">로또</a></div>
+                <div class="menu-item"><a href="/articles/article/create">글쓰기</a></div>
+
+                {% if current_user %}
+                    <div class="menu-item"><a href="#" id="logoutBtn">LOGOUT : {{ current_user.username | upper }}</a></div>
+                {% else %}
+                    <div class="menu-item"><a href="/accounts/login">LOGIN</a></div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+</div>

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}
+    회원등록
+{% endblock %}
+
+{% block sub_css %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}/statics/css/custom/form.css">
+    <style>
+        #authVerifyForm, #accountForm {
+            display: none
+        }
+
+        .verify-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .verify-container .input-container {
+            width: 80%;
+        }
+
+        .verify-container .btn-container {
+            width: 18%;
+            margin-top: 48px;
+        }
+
+        .verify-container .btn-container .auth-btn {
+            height: 40px;
+            font-size: 18px;
+        }
+        #register-email {
+            background-color: #f8f8f8;
+            color: #999;
+            border-color: #e5e5e5;
+        }
+    </style>
+{% endblock %}
+
+{% block sub_js %}
+    <script>
+        const UserID = {{ (current_user.id if current_user else none) | tojson }};
+        const Username = {{ (current_user.username if current_user else '') | tojson }};
+        const Email = {{ (current_user.email if current_user else '') | tojson }};
+
+        const RegisterURL = "/apis/accounts/register";
+        const UpdateURL = {{ ("/apis/accounts/" + (current_user.id | string) if current_user else none) | tojson }};
+        const LoginURL = "/apis/auth/login";
+        window.AllParams = {
+            UserID: {{ (current_user.id if current_user else none) | tojson }},
+            Username: {{ (current_user.username if current_user else '') | tojson }},
+            Email: {{ (current_user.email if current_user else '') | tojson }},
+
+            RegisterURL: "/apis/accounts/register",
+            UpdateURL: {{ ("/apis/accounts/" + (current_user.id | string) if current_user else none) | tojson }},
+            LoginURL: "/apis/auth/login",
+        }
+    </script>
+{% endblock %}
+
+{% block main %}
+    <section class="main-container">
+        <article class="contents-container register-container">
+            <h2>회원 등록</h2>
+            <hr class="hr-bold">
+            <div class="uk-margin" id="errorTag"><!--js에서 넘어온 오류 메시지를 넣는다.--></div>
+
+            <form id="authRequestForm">
+                <div class="uk-margin request-container">
+                    <div class="uk-margin request-email">
+                        <div>이메일</div>
+                        <input class="uk-input" id="request-type" type="hidden" name="type" value="register">
+                        <input class="uk-input" id="request-email" type="email" name="email" required>
+                    </div>
+                    <div class="auth-create">
+                        <button class="auth-create-btn" type="submit">인증코드 발송</button>
+                    </div>
+                </div>
+            </form>
+
+            <form id="authVerifyForm">
+                <div class="uk-margin verify-container">
+                    <div class="uk-margin">
+                        <input class="uk-input" type="hidden" name="type" value="register">
+                        <input class="uk-input" type="hidden" name="old_email" value="">
+                        <input class="uk-input" type="hidden" name="password" value="">
+                        <input class="uk-input" id="verify-email" type="hidden" name="email">
+                    </div>
+                    <div class="uk-margin input-container">
+                        <div>인증코드</div>
+                        <input class="uk-input" id="authcode" type="text" name="authcode" required>
+                    </div>
+                    <div class="btn-container">
+                        <button class="auth-btn" type="submit">인증하기</button>
+                    </div>
+                </div>
+            </form>
+
+            <form id="accountForm" enctype="multipart/form-data">
+                <div class="uk-margin register-container">
+                    <div class="uk-margin">
+                        <div>가입 이메일</div>
+                        <input class="uk-input" id="register-email" type="email" name="email" readonly>
+                        <input class="uk-input" id="verified-token" type="hidden" name="token">
+                    </div>
+                    <div class="uk-margin">
+                        <div>닉네임</div>
+                        <input class="uk-input" id="username" type="text" name="username" required>
+                    </div>
+                    <div class="uk-margin">
+                        <label for="imagefile" class="form-label">Profile Image</label>
+                        <input type="file" accept="image/*" class="form-control" id="imagefile" name="imagefile"/>
+                    </div>
+                    <div class="uk-margin">
+                        <div>비밀번호</div>
+                        <input class="uk-input" id="password" type="password" name="password" required>
+                    </div>
+                    <div class="uk-margin">
+                        <div>비밀번호 확인</div>
+                        <input class="uk-input" id="confirmPassword" type="password" name="confirmPassword" required>
+                    </div>
+                    <div class="uk-margin">
+                        <button id="register-btn" class="register-btn" type="submit">가입 신청</button>
+                    </div>
+                </div>
+            </form>
+            {% include 'includes/js_script/authcode_script.html' %}
+            {% include 'includes/js_script/accounts_script.html' %}
+        </article>
+    </section>
+{% endblock %}

@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if article %}
+        게시글 수정
+    {% else %}
+        게시글 쓰기
+    {% endif %}
+{% endblock %}
+
+{% block sub_css %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}/statics/css/custom/form.css">
+
+    <link rel="stylesheet" href="{{ STATIC_URL }}/statics/quills/v_2.0.3/quill.snow.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}/statics/quills/custom/quill_text_align.css">
+    <style>
+        #quill-container {position: relative;}
+        #editor-container {
+            border-radius: 0 0 10px 10px;
+            height: auto;
+            min-height: 300px;
+            overflow: auto;
+            font-size: 16px; /*detail page와 동일하게 맞춤 (글씨 크기, 줄간격, 단락 간격(margin-top, margin-bottom))*/
+        }
+
+        #editor-container > div.ql-editor {
+            padding-bottom: 20px !important;
+        }
+        #editor-container > div.ql-editor p { /*detail page와 동일하게 맞춤 (글씨 크기, 줄간격, 단락 간격(margin-top, margin-bottom))*/
+            margin: 20px 0;
+            line-height: 1.75;
+        }
+        #drop-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px dashed #aaa;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.8);
+            font-size: 18px;
+            color: #555;
+            z-index: 10;
+        }
+
+        /*///////// buton customizing start ////////*/
+        /*아이콘 간격 조정*/
+        #quill-container > div.ql-toolbar.ql-snow > span.group-block > button.ql-blockquote,
+        #quill-container > div.ql-toolbar.ql-snow > span.group-insert > button.ql-link,
+        #quill-container > div.ql-toolbar.ql-snow > span.group-insert > button.ql-image,
+        #quill-container > div.ql-toolbar.ql-snow > span.group-header > button:nth-child(1),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-header > button:nth-child(2),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-list-indent > button:nth-child(1),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-list-indent > button.ql-list.ql-active,
+        #quill-container > div.ql-toolbar.ql-snow > span.group-list-indent > button:nth-child(2),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-list-indent > button:nth-child(3),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-list-indent > button:nth-child(4),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-script > button.ql-list.ql-active,
+        #quill-container > div.ql-toolbar.ql-snow > span.group-script > button:nth-child(1),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-extra > button.ql-list.ql-active,
+        #quill-container > div.ql-toolbar.ql-snow > span.group-extra > button:nth-child(1) {margin-right: 3px}
+        #quill-container > div.ql-toolbar.ql-snow > span.group-block > button.ql-code-block,
+        #quill-container > div.ql-toolbar.ql-snow > span.group-insert > button.ql-image,
+        #quill-container > div.ql-toolbar.ql-snow > span.group-insert > button.ql-video,
+        #quill-container > div.ql-toolbar.ql-snow > span.group-header > button:nth-child(3),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-header > button:nth-child(2),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-list-indent > button:nth-child(2),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-list-indent > button:nth-child(3),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-list-indent > button:nth-child(4),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-list-indent > button:nth-child(5),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-script > button:nth-child(2),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-extra > button:nth-child(2) {margin-left: 3px}
+
+        /*아이콘 굵기 조정*/
+        #quill-container > div.ql-toolbar.ql-snow > span.ql-formats.group-text > button.ql-strike {margin-bottom: 5px}
+        .ql-snow.ql-toolbar button, .ql-snow .ql-toolbar button {width: 30px !important; height: 30px !important;}
+        #quill-container > div.ql-toolbar.ql-snow > span.group-extra > span.ql-color.ql-picker.ql-color-picker > span.ql-picker-label,
+        #quill-container > div.ql-toolbar.ql-snow > span.group-extra > span.ql-background.ql-picker.ql-color-picker,
+        #quill-container > div.ql-toolbar.ql-snow > span.group-extra > span.ql-align.ql-picker.ql-icon-picker {width: 35px;}
+        #ql-picker-options-2 > span.ql-picker-item.ql-selected,
+        #ql-picker-options-2 > span.group-block,
+        #ql-picker-options-2 > span.group-insert,
+        #ql-picker-options-2 > span.group-header {width: 35px !important; height: 35px !important;}
+        #quill-container > div.ql-toolbar.ql-snow .ql-picker {height: 35px !important; width: 37px !important;}
+        #quill-container > div.ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-options {margin-top: -1px;}
+        #quill-container > div.ql-toolbar.ql-snow .ql-stroke {stroke-width: 1.3}
+        #quill-container > div.ql-toolbar.ql-snow > span.group-block > button.ql-blockquote > svg > rect:nth-child(1),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-block > button.ql-blockquote > svg > rect:nth-child(2) {fill: none}
+        #quill-container > div.ql-toolbar.ql-snow > span.group-text > button.ql-strike > svg > path:nth-child(2),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-text > button.ql-strike > svg > path:nth-child(3),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-header > button:nth-child(1) > svg,
+        #quill-container > div.ql-toolbar.ql-snow > span.group-header > button:nth-child(2) > svg,
+        #quill-container > div.ql-toolbar.ql-snow > span.group-header > button:nth-child(3) > svg,
+        #quill-container > div.ql-toolbar.ql-snow > span.group-script > button:nth-child(1) > svg > path:nth-child(2),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-script > button:nth-child(2) > svg > path:nth-child(2),
+        #quill-container > div.ql-toolbar.ql-snow > span.group-script > button.ql-formula > svg {stroke: white; stroke-width: 0.7}
+        /*반응형 dropdown 에서 아이콘 굵기 조정*/
+        #quill-container > div.ql-toolbar.ql-snow > div > div.dropdown-menu > span.ql-formats.group-header > button:nth-child(1) > svg,
+        #quill-container > div.ql-toolbar.ql-snow > div > div.dropdown-menu > span.ql-formats.group-header > button:nth-child(2) > svg,
+        #quill-container > div.ql-toolbar.ql-snow > div > div.dropdown-menu > span.ql-formats.group-header > button:nth-child(3) > svg {stroke: white; stroke-width: 0.55}
+        #quill-container > div.ql-toolbar.ql-snow > div > div.dropdown-menu > span.ql-formats.group-script > button:nth-child(1) > svg > path:nth-child(2),
+        #quill-container > div.ql-toolbar.ql-snow > div > div.dropdown-menu > span.ql-formats.group-script > button:nth-child(2) > svg > path:nth-child(2),
+        #quill-container > div.ql-toolbar.ql-snow > div > div.dropdown-menu > span.ql-formats.group-script > button.ql-formula > svg {stroke: white; stroke-width: 0.55}
+
+        {##quill-container > div.ql-toolbar.ql-snow > div > div.dropdown-toggle.display {display: none;}#}
+        #quill-container > div.ql-toolbar.ql-snow > div > div.dropdown-toggle > svg {
+            width: 16px;
+            height: 16px;
+            {#margin: auto;#}
+            {#fill: currentColor;#}
+            {#display: block;#}
+            {#text-align: center;#}
+            {#float: none;#}
+        }
+
+
+        /* 드롭다운 버튼 시작 */
+        .ql-toolbar.ql-snow {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .ql-toolbar.ql-snow .ql-formats {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .dropdown-wrapper {
+            position: relative;
+            margin-left: auto;
+        }
+
+        .dropdown-toggle {
+            cursor: pointer;
+            padding: 4px 8px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            display: none;
+            flex-direction: column;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 6px;
+            z-index: 1000;
+            min-width: 190px;
+        }
+
+        .dropdown-menu .ql-formats {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+        }
+
+        .dropdown-menu .ql-formats:last-child {
+            margin-bottom: 0;
+        }
+
+        .dropdown-wrapper.open .dropdown-menu {
+            display: flex;
+        }/* end */
+
+
+        #quill-container > div.ql-toolbar.ql-snow {
+            border-top: 1px solid #ccc;
+            border-right: 1px solid #ccc;
+            border-left: 1px solid #ccc;
+            {#border-bottom: none;#}
+            border-radius: 7px 7px 0 0;
+            position: sticky;
+            top: -4px;
+            z-index: 1;
+            background-color: white;
+        }
+        #quill-container > div.ql-toolbar.ql-snow .hr-wrapper hr {margin-top: 8px; margin-bottom: 0;}
+        #quill-container > div.ql-toolbar.ql-toolbar.ql-snow {padding: 6px;}
+        #editor-container > div.ql-tooltip.ql-editing {
+            left: 10px !important;
+        }
+        #quill-container > div.ql-toolbar.ql-snow.ql-toolbar button, .ql-snow .ql-toolbar button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+            float: left;
+            padding: 3px 3px;
+            width: 28px;
+            height: 28px;
+        }
+        #quill-container > div.ql-toolbar.ql-snow.ql-toolbar button svg, .ql-snow .ql-toolbar button svg {
+            width: 100%;
+            float: left;
+            height: 100%;
+        } /*///////// buton customizing end ////////*/
+
+        /* Quill Editor 안의 img 보정 */
+        #editor-container .ql-editor img.selected {
+            outline: 2px solid mediumspringgreen;
+        }
+        /* ////////큰 이미지로 인한 급격한 점프 완화: JS는 AI Chat 방법 안된다. /////////////*/
+        #editor-container .ql-editor img {
+            max-width: 100%;
+            height: auto;
+            /* max-height: 60vh;  /* 필요 시 제한 */
+            display: block;
+            scroll-margin-top: 70px; /* 상단 툴바가 고정이면 그 높이만큼 여백 */
+            margin-top: 25px;
+            margin-bottom: 25px; /* 이미지 간의 간격, detail 페이지에서 간격이 존재한다. */
+        }
+
+        /* Quill Editor 안의 동영상(iframe/video)을 반응형 16:9로 */
+        #editor-container .ql-editor .ql-video,
+        #editor-container .ql-editor video.ql-video {
+            width: 100% !important;
+            max-width: 100%;
+            height: auto !important;
+            aspect-ratio: 16 / 9;
+            display: block;
+            background: #000; /* 로딩 전 블랙 레터박스 */
+        }
+
+        /* aspect-ratio를 지원하지 않는 브라우저 대비 래퍼 방식 (선택) */
+        #editor-container .ql-editor .video-16x9 {
+            position: relative;
+            width: 100%;
+        }
+
+        #editor-container .ql-editor .video-16x9::before {
+            content: "";
+            display: block;
+            padding-top: 56.25%; /* 16:9 */
+        }
+
+        #editor-container .ql-editor .video-16x9 > .ql-video {
+            position: absolute;
+            inset: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        iframe.ql-video {margin: 25px 0;}
+
+
+
+
+
+        /*///////////////////////////////////////////////////////////////////////////////*/
+
+    </style>
+{% endblock %}
+
+{% block sub_js %}
+    <script>
+        const REAL_OBJECT_ID = {{ (article.id if article else none) | tojson }};
+        const EDITOR_INNERHTML_CONTENT = {{ (article.content if article else '') | tojson }};
+
+        const imageMarkObserverURL = "/quills/file/mark_delete_images/" + {{ mark_id }};
+        const imageUnmarkObserverURL = "/quills/file/unmark_delete_images/" + {{ mark_id }};
+
+        const videoMarkObserverURL = "/quills/file/mark_delete_videos/" + {{ mark_id }};
+        const videoUnmarkObserverURL = "/quills/file/unmark_delete_videos/" + {{ mark_id }};
+
+        const IMAGE_UPLOAD_URL = "/quills/file/upload_image";
+        const VIDEO_UPLOAD_URL = "/quills/file/upload_video";
+        const CreateActionURL = "/apis/articles/post";
+        const UpdateActionURL = {{ ("/apis/articles/" + (article.id | string) if article else none) | tojson }};
+        const DetailBaseURL = "/articles/article";
+
+        console.log("REAL_OBJECT_ID: ", REAL_OBJECT_ID);
+        console.log('REAL_OBJECT_ID =', REAL_OBJECT_ID, 'typeof =', typeof REAL_OBJECT_ID);
+        console.log('UpdateActionURL =', UpdateActionURL);
+        console.log('videoMarkObserverURL =', videoMarkObserverURL);
+        console.log('videoUnmarkObserverURL =', videoUnmarkObserverURL);
+        window.AllParams = {
+            REAL_OBJECT_ID: REAL_OBJECT_ID,
+            EDITOR_INNERHTML_CONTENT: EDITOR_INNERHTML_CONTENT,
+
+            imageMarkObserverURL: imageMarkObserverURL,
+            imageUnmarkObserverURL: imageUnmarkObserverURL,
+            videoMarkObserverURL: videoMarkObserverURL,
+            videoUnmarkObserverURL: videoUnmarkObserverURL,
+            IMAGE_UPLOAD_URL: IMAGE_UPLOAD_URL,
+            VIDEO_UPLOAD_URL: VIDEO_UPLOAD_URL,
+
+            CreateActionURL: CreateActionURL,
+            UpdateActionURL: UpdateActionURL,
+            DetailBaseURL: DetailBaseURL,
+
+        }
+
+
+
+    </script>
+{% endblock %}
+
+{% block main %}
+    <section class="main-container">
+        <article class="contents-container article-create">
+            {% if article %}
+                <h2>게시글 수정</h2>
+            {% else %}
+                <h2>게시글 쓰기</h2>
+            {% endif %}
+            <div class="uk-margin" id="errorTag"><!--js에서 넘어온 오류 메시지를 넣는다.--></div>
+            <form id="submitForm" class="uk-form-stacked" enctype="multipart/form-data">
+                <div class="uk-margin">
+                    {% if article %}
+                        <input type="hidden" name="author_id" value="{{ article.author_id }}">
+                        <input id="article_id" type="hidden" name="article_id" value="{{ article.id }}">
+                    {% else %}
+                        <input type="hidden" name="author_id" value="{{ current_user.id }}">
+                    {% endif %}
+                </div>
+                <div class="uk-margin">
+                    {% if article %}
+                        <input class="uk-input" id="title" type="text" placeholder="제목" name="title" value="{{ article.title }}" required>
+                    {% else %}
+                        <input class="uk-input" id="title" type="text" placeholder="제목" name="title" required>
+                    {% endif %}
+
+                </div>
+                <div class="uk-margin">
+                    <label for="imagefile" class="form-label">Post Image</label>
+                    <input id="imagefile" type="file" accept="image/*" class="form-control" name="imagefile"/>
+                </div>
+
+                <!-- Quill 에디터를 넣을 DIV -->
+                <div id="quill-container" class="uk-margin">
+                    <div id="drop-area"></div>
+                    <!--div id="toolbar-container"></div-->
+                    <div id="editor-container"></div>
+                </div>
+
+                <div class="uk-margin">
+                    <script src="{{ STATIC_URL }}/statics/quills/v_2.0.3/quill.js"></script>
+                    <!-- Quill 2 호환 ImageResize 모듈(예: quill-image-resize-module-v2 UMD 번들)
+                    https://github.com/henriqueformiga/quill-image-resize-module-v2/tree/master -->
+                    <script src="{{ STATIC_URL }}/statics/quills/v_2.0.3/quill-image-resize-module-v2/image-resize.min.js"></script>
+
+                    {% include 'includes/js_script/quill_script.html' %}
+
+                    <button class="create-btn" type="submit" id="form-submit">글 올리기</button>
+                </div>
+
+            </form>
+            <p>{{ current_user }}</p>
+        </article>
+    </section>
+
+{% endblock %}
+
+{% block end_js %}
+
+
+{% endblock %}

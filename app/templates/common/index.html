@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Index
+{% endblock %}
+
+{% block main %}
+    <section class="main-container">
+        <article class="contents-container">
+
+            <p class="h1">{{ title }}</p>
+            <P>{{ message }}</P>
+            <div style="background-color: lightgrey; border: 1px solid black; padding: 10px">
+                <div><a href="https://vclock.kr/time/" target="_blank">현재 시간</a></div>
+                <div>current_user: {{ current_user.id }}</div>
+                <hr>
+
+                <div>지금 시간: {{ now_time }}</div>
+                <div>지금 시간_utc: {{ now_time_utc }}</div>
+                <hr>
+
+                <div style="overflow-wrap: break-word">access_token: {{ access_token }}</div>
+                <div style="overflow-wrap: break-word">refresh_token: {{ refresh_token }}</div>
+                <div style="overflow-wrap: break-word">csrf_token: {{ csrf_token }}</div>
+            </div>
+            <div>request: {{ request }}</div>
+            <hr class="uk-divider-icon">
+            <div class="uk-flex">
+                <div style="width: 45%">
+                    <div class="menu-item"><a href="https://studiomeal.com/archives/197" target="_blank">이번에야말로 CSS Flex를 익혀보자!</a></div>
+                    <div class="menu-item"><a href="https://www.freecodecamp.org/korean/news/javascripteseo-gajang-jal-alryeojin-http-yoceong-bangbeob-2/" target="_blank">JavaScript에서 가장 잘 알려진 HTTP 요청
+                        방법</a></div>
+                    <div><a href="https://mangkyu.tistory.com/146" target="_blank">[HTTP] HTTP 상태 401(Unauthorized) vs 403(Forbidden) 차이</a></div>
+                    <hr>
+
+                    <div class="menu-item"><a href="https://developer.mozilla.org/ko/docs/Web/CSS/Layout_cookbook/Center_an_element" target="_blank">MDN</a></div>
+                    <div class="menu-item"><a href="https://icon-icons.com/ko/" target="_blank">무료 아이콘 수천</a></div>
+                    <div><a href="https://flatuicolors.com/" target="_blank">RGB COLOR</a></div>
+                    <div><a href="https://imagecolorpicker.com/" target="_blank">Color Picker(색상 뽑아내기)</a></div>
+                    <div><a href="http://www.hipenpal.com/tool/html-color-charts-rgb-color-table-in-korean.php" target="_blank">RGB색상코드표팔레트</a></div>
+                    <hr>
+
+                    <div><a href="https://coding-shop.tistory.com/403" target="_blank">[Pydantic] Field로 데이터 유효성 검사 마스터하기</a></div>
+                    <hr>
+
+                    <div><a href="https://jindevelopetravel0919.tistory.com/391" target="_blank">[Redis] Docker 환경에서 Redis 설치</a></div>
+                    <div>
+                        <a href="https://engineeringcode.tistory.com/entry/%EC%9C%88%EB%8F%84%EC%9A%B0-11-%EB%A0%88%EB%94%94%EC%8A%A4Redis%EB%A5%BC-%EB%8F%84%EC%BB%A4%EB%A1%9C-%EC%84%A4%EC%B9%98%ED%95%98%EB%8A%94-%EB%B0%A9%EB%B2%95"
+                           target="_blank">[윈도우 11] 레디스(Redis)를 도커로 설치하는 방법</a></div>
+                    <hr>
+
+                    <div><a href="https://chaechae.life/blog/fastapi-permissions" target="_blank">FastAPI permissions 구현하기</a></div>
+                    <hr>
+
+
+                    <div><a href="https://fastapi.tiangolo.com/advanced/templates/" target="_blank">FASTapi</a></div>
+                    <div><a href="https://www.starlette.io/templates/" target="_blank">FASTapi 공식문서</a></div>
+                    <div><a href="https://www.fastapitutorial.com/blog/fastapi-hello-world/" target="_blank">FASTapi 공식 튜토리얼</a></div>
+                    <div><a href="https://dev.to/fastapitutorial/serving-html-with-fastapi-2b0p" target="_blank">개발-Serving HTML with FastAPI</a></div>
+                    <div>
+                        <a href="https://mattpy.tistory.com/entry/FastAPIPython%EA%B3%BC-Svelte%EB%A1%9C-%EB%AC%B4%EC%9E%91%EC%A0%95-%EC%9B%B9-%EA%B0%9C%EB%B0%9C%ED%95%98%EA%B8%B0%EA%B8%B0%EC%B4%88-2?category=835392"
+                           target="_blank">
+                            FastAPI(Python)과 Svelte로 무작정 웹 개발하기
+                        </a></div>
+                </div>
+                <div style="width: 10%"></div>
+                <div style="width: 45%">
+                    <div><a href="/server">서버 개발 관련</a></div>
+                    <div><a href="/docker">우분투 도커 셋팅 개발 관련</a></div>
+                    <hr>
+
+                    <div><a href="/accounts/account/1">1번 회원 상세정보</a></div>
+                    <div><a href="/accounts/account/update/1">1번 회원정보 수정</a></div>
+
+                    <hr>
+
+                    {% if current_user %}
+                        <div>##### {{ current_user.username }} 회원 정보 전체 보기 및 전체 변경 #####</div>
+                        <div><a href="/accounts/account/{{ current_user.id }}">{{ current_user.username }}회원님의 상세정보(탈퇴는 상세정보 내에서 취급)</a></div>
+                        <div><a href="/accounts/account/update/{{ current_user.id }}">{{ current_user.username }}님의 회원정보 수정(테스트용: 각각 수정할 수 있도록 변경함)</a></div>
+                        <hr>
+
+                        <div>##### {{ current_user.username }} 회원 정보 각각 수정할 수 있도록 함 #####</div>
+                        <div><a href="/accounts/account/username/update/{{ current_user.id }}">{{ current_user.username }}회원님의 닉네임 변경</a></div>
+                        <div><a href="/accounts/account/email/update/{{ current_user.id }}">{{ current_user.username }}회원님의 이메일 변경</a></div>
+                        <div><a href="/accounts/account/image/update/{{ current_user.id }}">{{ current_user.username }}회원님의 프로필 이미지 변경</a></div>
+                        <div><a href="/accounts/account/password/update/{{ current_user.id }}">{{ current_user.username }}회원님의 비밀번호 변경</a></div>
+
+                        <hr>
+                    {% endif %}
+
+                    {% if not current_user %}
+                        <div><a href="/accounts/account/lost/password/setting"> 비밀번호 분실</a></div>
+                        <hr>
+                    {% endif %}
+
+                    <div><a href="/articles">모든 게시글</a></div>
+                    <div><a href="/articles/article/create">글쓰기</a></div>
+                    <div><a href="/articles/article/1">1번 게시글 상세 페이지</a></div>
+                    <div><a href="/articles/article/update/1">1번 게시글 수정페이지</a></div>
+                    <div><a href="#">1번 게시글 삭제</a></div>
+                    <hr>
+                    {% if current_user %}
+                        {% if admin %}
+                            <div><a href="/lotto/win/extract">로또 최다 당첨번호 10개 Top10 추출하기</a></div>
+                        {% endif %}
+                    {% endif %}
+                    <div><a href="/lotto/random">로또 무작위 예측</a></div>
+                    <div><a href="/lotto/top10">로또 Top10 예측</a></div>
+                    <hr>
+                </div>
+            </div>
+
+
+
+
+        </article>
+
+        <article class="contents-container">
+        </article>
+    </section>
+
+    <section class="main-container">
+        <article class="contents-container">
+        </article>
+    </section>
+
+{% endblock %}

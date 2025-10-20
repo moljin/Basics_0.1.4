@@ -1,0 +1,194 @@
+<!-- HTML+Jinja2 -->
+{% extends "base.html" %}
+
+{% block title %}
+    모든 게시글
+{% endblock %}
+
+{% block sub_css %}
+    <style>
+    .object-title {
+        overflow-wrap: break-word;
+    }
+
+    /* 카드 본문: 코드/긴 문자열도 줄바꿈 되도록
+    <!-- 코드블럭이 맨 첫 문단일 경우 카드가 세로로 배치되는 것 방지: 미리보기는 태그 제거 + 안전한 길이로 잘라서 표시 -->*/
+    .object-content {
+        line-height: 1.5;
+        max-height: 4.8em; /* 3줄 정도 클램프 */
+        overflow: hidden;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+    .object-content pre,
+    .object-content code,
+    .object-content .ql-code-block-container,
+    .object-content .ql-syntax {
+        white-space: pre-wrap;     /* 코드 줄바꿈 허용 */
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        max-width: 100%;
+        overflow: hidden;
+        margin: 0;                 /* 과도한 바깥 여백 제거 */
+        padding: 0;                /* 목록 미리보기에서는 패딩 제거 */
+        background: transparent;   /* 목록에서는 배경 제거(선택) */
+        color: inherit;            /* 목록에서는 텍스트 색상 상속(선택) */
+    } /*코드블럭이 맨 첫 문단일 경우 카드가 세로로 배치되는 것 방지 끝*/
+
+    /*pagination start*/
+    .uk-pagination > li > a,
+    .uk-pagination > li > span {
+        min-width: 36px;
+        text-align: center;
+    }
+    .uk-pagination>.uk-active>* {color: red}
+    body > main > section > article > ul > li:nth-child(2),
+    body > main > section > article > ul > li:nth-child(3),
+    body > main > section > article > ul > li:nth-child(4),
+    body > main > section > article > ul > li:nth-child(5),
+    body > main > section > article > ul > li:nth-child(6) {}
+    .prev-li .prev {display: flex; justify-content: left; align-items: center;}
+    .next-li .next {display: flex; align-items: center; padding-left: 5px;}
+    .next-li a.next {justify-content: center;}
+    .next-li a.cursor.next {justify-content: right;}
+    li.uk-disabled.next-li > span {justify-content: center;}
+    /*pagination end*/
+    </style>
+{% endblock %}
+
+{% block main %}
+    <section class="main-container">
+        <article class="contents-container">
+
+            <!-- 페이지 크기 선택/총 개수 -->
+            <div class="uk-flex uk-flex-middle uk-flex-between uk-margin">
+                <div>
+                    총 {{ pagination.total_count }}개
+                </div>
+                <form method="get" class="uk-form-horizontal uk-margin-remove">
+                    {% if pagination.mode == 'cursor' %}
+                        <!-- 커서 모드에서도 size 변경 시 offset 첫 페이지로 돌아가도록 page=1 -->
+                        <input type="hidden" name="mode" value="offset">
+                        <input type="hidden" name="page" value="1">
+                    {% else %}
+                        <input type="hidden" name="page" value="1">
+                        <input type="hidden" name="mode" value="offset">
+                    {% endif %}
+                    <label class="uk-form-label" for="size">페이지 크기</label>
+                    <div class="uk-form-controls">
+                        <select name="size" id="size" class="uk-select" onchange="this.form.submit()">
+                            {% for opt in [5,10,20,30,50,100] %}
+                                <option value="{{ opt }}" {% if opt == pagination.size %}selected{% endif %}>{{ opt }}개</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 게시글 카드 목록 -->
+            <div class="uk-child-width-1-3@m uk-grid-match" uk-grid>
+                {% for article in all_articles %}
+                    <div class="inner-container">
+                        <div class="uk-card uk-card-default">
+                            <div class="uk-card-media-top">
+                                <a href="/articles/article/{{ article.id }}">
+                                    {% if article.img_path %}
+                                        <img src="{{ STATIC_URL }}/{{ article.img_path }}" style="width: 100%" alt="Article Image">
+                                    {% else %}
+                                        <img src="{{ STATIC_URL }}/media/default/blog_default.png" style="width: 100%" alt="Article Image">
+                                    {% endif %}
+                                </a>
+                            </div>
+                            <div class="uk-card-body">
+                                <h3 class="uk-card-title object-title"><a href="/articles/article/{{ article.id }}">{{ article.title }}</a></h3>
+                                <p class="uk-text-meta uk-margin-remove-top">
+                                    <time datetime="">{{ article.created_at }}</time>
+                                </p>
+                                <!-- 미리보기는 태그 제거 + 안전한 길이로 잘라서 표시 -->
+                                <div class="object-content">
+                                    {{ article.content | striptags | truncate(120) }}
+                                </div>
+                                {% if article.author %}
+                                    <p class="uk-text-right">{{ article.author.username }} : <strong>{{ article.id }}</strong></p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- 페이지네이션 -->
+            {% if pagination.mode == 'offset' %}
+
+                <ul class="uk-pagination uk-flex-center uk-margin-large-top" uk-margin>
+                    <li class="{% if not pagination.has_prev %}uk-disabled{% endif %} prev-li">
+                        {% if pagination.has_prev %}
+                            <a class="prev" href="{{ pagination.prev_href }}"><span uk-pagination-previous></span></a>
+                        {% else %}
+                            {% if pagination.page_range != [1] %} <!--페이지가 한개뿐이면 페이지네이션 자체 안보이게...-->
+                                <span class="prev"><span uk-pagination-previous></span></span>
+                            {% endif %}
+                        {% endif %}
+                    </li>
+                    {% if pagination.page_range != [1] %} <!--페이지가 한개뿐이면 페이지네이션 자체 안보이게...-->
+                        {% for p in pagination.page_range %}
+                            <li class="{% if p == pagination.page %}uk-active{% endif %}">
+
+                                {% if p == pagination.page %}
+                                    <span>{{ p }}</span>
+                                {% else %}
+                                    <a href="?page={{ p }}&size={{ pagination.size }}&mode=offset">{{ p }}</a>
+                                {% endif %}
+
+                            </li>
+                        {% endfor %}
+                    {% endif %}
+
+                    <li class="{% if not pagination.has_next %}uk-disabled{% endif %} next-li">
+                        {% if pagination.has_next %}
+                            <a class="next" href="{{ pagination.next_href }}"><span uk-pagination-next></span></a>
+                        {% else %}
+                            {% if pagination.page_range != [1] %} <!--페이지가 한개뿐이면 페이지네이션 자체 안보이게...-->
+                                <span class="next"><span uk-pagination-next></span></span>
+                            {% endif %}
+                        {% endif %}
+                    </li>
+                </ul>
+                <!--개발시 풀면, 오프셋과 커서 변환 구분할 수 있다.-->
+                <!--div class="uk-text-center uk-text-muted">
+                    페이지 {{ pagination.page }} / {{ pagination.total_pages }}
+                    {% if pagination.deep_page_threshold %} · 임계: {{ pagination.deep_page_threshold }}{% endif %}
+                </div-->
+            {% else %}
+                <!-- 커서 모드: Prev/Next 중심 -->
+                <ul class="uk-pagination uk-flex-center uk-margin-large-top" uk-margin>
+                    <li class="{% if not pagination.has_prev %}uk-disabled{% endif %}">
+                        {% if pagination.has_prev and pagination.prev_href %}
+                            <a href="{{ pagination.prev_href }}"><span uk-pagination-previous></span></a>
+                        {% else %}
+                            <span><span uk-pagination-previous></span></span>
+                        {% endif %}
+                    </li>
+
+                    <li class="uk-active">
+                        <span>
+                            {% if pagination.approx_page %}{{ pagination.approx_page }}{% else %}-{% endif %} / {{ pagination.total_pages }}
+                        </span>
+                    </li>
+
+                    <li class="{% if not pagination.has_next %}uk-disabled{% endif %} next-li">
+                        {% if pagination.has_next and pagination.next_href %}
+                            <a class="cursor next" href="{{ pagination.next_href }}"><span uk-pagination-next></span></a>
+                        {% else %}
+                            <span class='cursor next'><span uk-pagination-next></span></span>
+                        {% endif %}
+                    </li>
+                </ul>
+                <!--개발시 풀면, 오프셋과 커서 변환 구분할 수 있다.-->
+                <!--div class="uk-text-center uk-text-muted">
+                    빠른 탐색 모드(커서 페이지네이션)
+                </div-->
+            {% endif %}
+        </article>
+    </section>
+{% endblock %}

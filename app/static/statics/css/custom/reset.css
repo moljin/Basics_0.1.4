@@ -1,0 +1,180 @@
+/**
+ * Minified by jsDelivr using clean-css v5.3.3.
+ * Original file: /npm/reset-css@4.0.1/reset.css
+ *
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+a, abbr, acronym, address, applet, article, aside, audio, b, big, blockquote, body,
+canvas, caption, center, cite, code, dd, del, details, dfn, div, dl, dt, em, embed,
+fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup,
+html, i, iframe, img, ins, kbd, label, legend, li, main, mark, menu, nav, object, ol,
+output, p, pre, q, ruby, s, samp, section, small, span, strike, strong, sub, summary,
+sup, table, tbody, td, tfoot, th, thead, time, tr, tt, u, ul, var, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline
+}
+
+article, aside, details, figcaption, figure, footer, header, hgroup, main, menu, nav, section {
+    display: block
+}
+
+[hidden] {
+    display: none
+}
+
+body {
+    line-height: 1
+}
+
+/*ol, ul {*/
+/*    list-style: none*/
+/*}*/
+
+blockquote, q {
+    quotes: none
+}
+
+blockquote:after, blockquote:before, q:after, q:before {
+    content: '';
+    content: none
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0
+}
+/* Custom Reset */
+.fs-12 {font-size: 12px}
+.fs-13 {font-size: 13px}
+.fs-14 {font-size: 14px}
+.fs-15 {font-size: 15px}
+.fs-16 {font-size: 16px}
+.fs-17 {font-size: 17px}
+.fs-18 {font-size: 18px}
+
+.pt-2 {padding-top: 2px}
+.pt-3 {padding-top: 3px}
+.pt-4 {padding-top: 4px}
+.pt-5 {padding-top: 5px}
+.pt-7 {padding-top: 7px}
+.pt-8 {padding-top: 8px}
+.pt-9 {padding-top: 9px}
+.pt-10 {padding-top: 10px}
+.pt-15 {padding-top: 15px}
+.pt-20 {padding-top: 20px}
+.pt-30 {padding-top: 30px}
+
+.pb-2 {padding-bottom: 2px}
+.pb-3 {padding-bottom: 3px}
+.pb-4 {padding-bottom: 4px}
+.pb-5 {padding-bottom: 5px}
+.pb-7 {padding-bottom: 7px}
+.pb-8 {padding-bottom: 8px}
+.pb-9 {padding-bottom: 9px}
+.pb-10 {padding-bottom: 10px}
+.pb-15 {padding-bottom: 15px}
+.pb-20 {padding-bottom: 20px}
+.pb-30 {padding-bottom: 30px}
+
+.pl-2 {padding-left: 2px}
+.pl-3 {padding-left: 3px}
+.pl-4 {padding-left: 4px}
+.pl-5 {padding-left: 5px}
+.pl-7 {padding-left: 7px}
+.pl-8 {padding-left: 8px}
+.pl-9 {padding-left: 9px}
+.pl-10 {padding-left: 10px}
+.pl-15 {padding-left: 15px}
+.pl-20 {padding-left: 20px}
+.pl-22 {padding-left: 22px}
+.pl-23 {padding-left: 23px}
+.pl-25 {padding-left: 25px}
+.pl-30 {padding-left: 30px}
+.pl-40 {padding-left: 40px}
+
+.pr-5 {padding-right: 5px}
+.pr-7 {padding-right: 7px}
+.pr-8 {padding-right: 8px}
+.pr-9 {padding-right: 9px}
+.pr-10 {padding-right: 10px}
+.pr-15 {padding-right: 15px}
+.pr-20 {padding-right: 20px}
+.pr-30 {padding-right: 30px}
+
+.mt-0 {margin-top: 0}
+.mt-2 {margin-top: 2px}
+.mt-3 {margin-top: 3px}
+.mt-4 {margin-top: 4px}
+.mt-5 {margin-top: 5px}
+.mt-6 {margin-top: 6px}
+.mt-7 {margin-top: 7px}
+.mt-8 {margin-top: 8px}
+.mt-9 {margin-top: 9px}
+.mt-10 {margin-top: 10px}
+.mt-15 {margin-top: 15px}
+.mt-20 {margin-top: 20px}
+.mt-25 {margin-top: 25px}
+.mt-30 {margin-top: 30px}
+.mt-35 {margin-top: 35px}
+.mt-40 {margin-top: 40px}
+
+.mb-0 {margin-bottom: 0}
+.mb-2 {margin-bottom: 2px}
+.mb-3 {margin-bottom: 3px}
+.mb-4 {margin-bottom: 4px}
+.mb-5 {margin-bottom: 5px}
+.mb-7 {margin-bottom: 7px}
+.mb-8 {margin-bottom: 8px}
+.mb-9 {margin-bottom: 9px}
+.mb-10 {margin-bottom: 10px}
+.mb-15 {margin-bottom: 15px}
+.mb-20 {margin-bottom: 20px}
+.mb-30 {margin-bottom: 30px}
+.mb-40 {margin-bottom: 40px}
+
+.mr-0 {margin-right: 0}
+.mr-2 {margin-right: 2px}
+.mr-3 {margin-right: 3px}
+.mr-4 {margin-right: 4px}
+.mr-5 {margin-right: 5px}
+.mr-7 {margin-right: 7px}
+.mr-8 {margin-right: 8px}
+.mr-9 {margin-right: 9px}
+.mr-10 {margin-right: 10px}
+.mr-15 {margin-right: 15px}
+.mr-20 {margin-right: 20px}
+.mr-30 {margin-right: 30px}
+.mr-40 {margin-right: 40px}
+
+.ml-0 {margin-left: 0}
+.ml-2 {margin-left: 2px}
+.ml-3 {margin-left: 3px}
+.ml-4 {margin-left: 4px}
+.ml-5 {margin-left: 5px}
+.ml-6 {margin-left: 6px}
+.ml-7 {margin-left: 7px}
+.ml-8 {margin-left: 8px}
+.ml-9 {margin-left: 9px}
+.ml-10 {margin-left: 10px}
+.ml-15 {margin-left: 15px}
+.ml-20 {margin-left: 20px}
+.ml-30 {margin-left: 30px}
+.ml-40 {margin-left: 40px}
+
+body {
+    color: #1e272e;
+    line-height: 1.75rem;
+}
+
+body .main-container a {
+    text-decoration: none;
+    color: #341f97;
+}
+body .main-container a:hover {
+    color: #b33939;
+}
+/*# sourceMappingURL=/sm/5afe8c7b72cef7e558e6906b60d8730580a09d990f202e65e984835fa5d757cc.map */

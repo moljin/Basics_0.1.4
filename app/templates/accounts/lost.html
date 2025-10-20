@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}
+    비밀번호 설정
+{% endblock %}
+
+{% block sub_css %}
+	<link rel="stylesheet" href="{{ STATIC_URL }}/statics/css/custom/form.css">
+    <style>
+        #authVerifyForm, #accountForm {
+            display: none
+        }
+
+        .verify-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .verify-container .input-container {
+            width: 80%;
+        }
+
+        .verify-container .btn-container {
+            width: 18%;
+            margin-top: 48px;
+        }
+
+        .verify-container .btn-container .auth-btn {
+            height: 40px;
+            font-size: 18px;
+        }
+    </style>
+{% endblock %}
+
+{% block sub_js %}
+    <script>
+        const UserID = {{ (current_user.id if current_user else none) | tojson }};
+        const Username= {{ (current_user.username if current_user else '') | tojson }};
+        const Email= {{ (current_user.email if current_user else '') | tojson }};
+
+        const RegisterURL = "/apis/accounts/register";
+        const UpdateURL = {{ ("/apis/accounts/" + (current_user.id | string) if current_user else none) | tojson }};
+        const lostPasswordSetURL = "/apis/accounts/lost/password/setting"
+        const LoginURL = "/apis/auth/login";
+        window.AllParams = {
+            UserID: {{ (current_user.id if current_user else none) | tojson }},
+            Username: {{ (current_user.username if current_user else '') | tojson }},
+            Email: {{ (current_user.email if current_user else '') | tojson }},
+
+            RegisterURL: "/apis/accounts/register",
+            UpdateURL: {{ ("/apis/accounts/" + (current_user.id | string) if current_user else none) | tojson }},
+            passwordUpdateURL: {{ ("/apis/accounts/password/" + (current_user.id | string) if current_user else none) | tojson  }},
+            LoginURL: "/apis/auth/login",
+        }
+
+
+
+    </script>
+{% endblock %}
+
+{% block main %}
+    <section class="main-container">
+        <article class="contents-container register-container">
+            <h2>비밀번호 분실/설정</h2>
+            <hr class="hr-bold">
+            <div class="uk-margin" id="errorTag"><!--js에서 넘어온 오류 메시지를 넣는다.--></div>
+
+            <form id="authRequestForm">
+                <div class="uk-margin request-container">
+                    <div class="uk-margin request-email">
+                        <div>이메일</div>
+                        <input class="uk-input" type="hidden" name="type" value="lost">
+                        <input class="uk-input" id="request-email" type="email" name="email" required>
+                    </div>
+                    <div class="auth-create">
+                        <button class="auth-create-btn" type="submit">인증코드 발송</button>
+                    </div>
+                </div>
+            </form>
+            <form id="authVerifyForm">
+                <div class="uk-margin verify-container">
+                    <div class="uk-margin">
+                        <input class="uk-input" type="hidden" name="type" value="lost">
+                        <input class="uk-input" type="hidden" name="password" value="">
+                        <input class="uk-input" id="verify-email" type="hidden" name="email">
+                    </div>
+                    <div class="uk-margin input-container">
+                        <div>인증코드</div>
+                        <input class="uk-input" id="authcode" type="text" name="authcode" required>
+                    </div>
+                    <div class="btn-container">
+                        <button class="auth-btn" type="submit">인증하기</button>
+                    </div>
+                </div>
+            </form>
+
+            <form id="accountForm">
+                <div class="uk-margin">
+                    <div class="uk-margin">
+                        <input class="uk-input" id="register-email" type="hidden" name="email">
+                        <input class="uk-input" id="verified-token" type="hidden" name="token">
+                    </div>
+                    <div class="uk-margin">
+                        <div>새 비밀번호</div>
+                        <input class="uk-input" id="newpassword" type="password" name="newpassword" required>
+                    </div>
+                    <div class="uk-margin">
+                        <div>새 비밀번호 확인</div>
+                        <input class="uk-input" id="confirmPassword" type="password" name="confirmPassword" required>
+                    </div>
+
+                </div>
+
+                <div class="uk-margin">
+                    <button class="register-btn" type="submit">정보 변경</button>
+                </div>
+            </form>
+        </article>
+        {% include 'includes/js_script/authcode_script.html' %}
+        {% include 'includes/js_script/lost_script.html' %}
+    </section>
+{% endblock %}

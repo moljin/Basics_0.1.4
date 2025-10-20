@@ -1,0 +1,32 @@
+header {
+    width: 100%;
+    background-color: #30336b;
+}
+header .header nav.nav-container {
+    height: 70px;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 20px;
+    color: #dff9fb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+header .header nav.nav-container div.logo {
+    font-size: 30px;
+    font-weight: 700;
+}
+
+header .header nav.nav-container .menu .menu-item a {
+    font-size: 18px;
+}
+
+header .header nav.nav-container div.logo a, .menu .menu-item a {
+    text-decoration: none;
+    color: #dff9fb;
+}
+
+header .header nav.nav-container div.logo a:hover, .menu .menu-item a:hover {
+    color: #4bcffa;
+}
