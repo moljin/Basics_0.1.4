@@ -155,6 +155,6 @@ print("NOW_TIME: ", NOW_TIME)
 
 
 LOTTO_LATEST_URL = os.getenv("LOTTO_LATEST_URL")
-LOTTO_FILEPATH = STATIC_DIR + os.getenv("LOTTO_FILEPATH")
-
+LOTTO_FILEPATH = os.path.join(STATIC_DIR, os.getenv("LOTTO_FILEPATH"))# STATIC_DIR + os.getenv("LOTTO_FILEPATH")
+print("LOTTO_FILEPATH: ", LOTTO_FILEPATH)
 ADMINS = [os.getenv("ADMIN_1"), os.getenv("ADMIN_2")]
