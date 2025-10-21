@@ -51,6 +51,19 @@ ARTICLE_THUMBNAIL_UPLOAD_DIR = os.path.join(STATIC_DIR, os.getenv("ARTICLE_THUMB
 ARTICLE_QUILLS_USER_IMG_UPLOAD_DIR = os.path.join(STATIC_DIR, os.getenv("ARTICLE_QUILLS_USER_IMG_DIR"))
 ARTICLE_QUILLS_USER_VIDEO_UPLOAD_DIR = os.path.join(STATIC_DIR, os.getenv("ARTICLE_QUILLS_USER_VIDEO_DIR"))
 
+# 생성할 디렉토리 경로 목록
+directory_list = [
+    PROFILE_IMAGE_UPLOAD_DIR,
+    ARTICLE_THUMBNAIL_UPLOAD_DIR,
+    ARTICLE_QUILLS_USER_IMG_UPLOAD_DIR,
+    ARTICLE_QUILLS_USER_VIDEO_UPLOAD_DIR
+]
+
+# 목록의 각 경로에 대해 디렉토리 생성
+for path in directory_list:
+    os.makedirs(path, exist_ok=True)
+    print(f"디렉토리 '{path}'가 생성되었거나 이미 존재합니다.")
+
 # 로그인 시 쿠키에 저장한 이름과 동일해야 합니다.
 # Pydantic model인 class TokenResponse(BaseModel): 여기 인자의 이름과도 동일해야 한다.
 # 여기와 pydantic model의 인자 이름과 동일하기만 하면 나머지는 모두 해결된다.

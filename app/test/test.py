@@ -18,3 +18,16 @@ extract_num_str = cast(str, _list)
 _full_int_list = ast.literal_eval(extract_num_str)
 
 print(_full_int_list)
+
+import os
+
+# 생성하려는 디렉토리 경로
+directory_path = "./new/directory/add"
+
+# 디렉토리 존재 여부 확인
+if not os.path.isdir(directory_path):
+    # 디렉토리가 없으면 생성
+    os.makedirs(directory_path)
+    print(f"'{directory_path}' 디렉토리를 생성했습니다.")
+else:
+    print(f"'{directory_path}' 디렉토리가 이미 존재합니다.")
