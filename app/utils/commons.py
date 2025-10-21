@@ -31,10 +31,8 @@ async def file_renaming(username:str, ext:str):
 
 async def upload_single_image(path:str, user: User, imagefile: UploadFile = None):
     try:
-        print("upload_single_image path: ", path)
-        upload_dir = f"{path}"+"/"+f"{user.id}"+"/"
+        upload_dir = f"{path}"+"/"+f"{user.id}"+"/" # d/t Linux
         url = await file_write_return_url(upload_dir, user, imagefile, "static", _type="image")
-        print("upload_single_image url: ", url)
         return url
 
     except Exception as e:
@@ -50,9 +48,7 @@ async def file_write_return_url(upload_dir: str, user: User, file: UploadFile, _
     filename_only, ext = os.path.splitext(file.filename)
     if len(file.filename.strip()) > 0 and len(filename_only) > 0:
         upload_filename = await file_renaming(user.username, ext)
-        print("upload_dir: ", upload_dir)
         file_path = upload_dir + upload_filename
-        print("file_path: ", file_path)
 
         async with aio.open(file_path, "wb") as outfile:
             if _type == "image":
@@ -62,7 +58,6 @@ async def file_write_return_url(upload_dir: str, user: User, file: UploadFile, _
                     if not chunk:
                         break
                     await outfile.write(chunk)
-                    print("image outfile: ", outfile)
             elif _type == "video":
                 # await outfile.write(await file.read())
                 # 대용량 업로드: 청크 단위로 읽어서 바로 쓰기 (메모리 사용 최소화)
