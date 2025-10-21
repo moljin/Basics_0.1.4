@@ -4,8 +4,8 @@
 .main-width {max-width: 1280px; margin: 0 auto; padding: 0 20px}
 .main-width.lotto {background: #130f40; padding-top: 30px}
 
-.wanted-form {width: 370px; justify-content: center;}
-.wanted-form input {width: 15%; height: 50px; margin-right: 5px; text-align: center;}
+.wanted-form {width: 340px; justify-content: center;}
+.wanted-form input {width: 20%; height: 50px; margin-right: 5px; text-align: center;}
 .wanted-form button {background: #dfe4ea ; height: 50px; border: solid 5px white; font-size: 18px; font-weight: bold}
 .wanted-form button:hover {background: white; border: solid 5px white}
 

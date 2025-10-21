@@ -53,7 +53,8 @@ async def related_server(request: Request,
 
     template = "common/server.html"
     context = {'request': request,
-               'current_user': current_user}
+               'current_user': current_user,
+               'admin': is_admin(current_user)}
     return templates.TemplateResponse(template, context)
 
 
@@ -64,7 +65,8 @@ async def related_server(request: Request,
 
     template = "common/docker.html"
     context = {'request': request,
-               'current_user': current_user}
+               'current_user': current_user,
+               'admin': is_admin(current_user)}
     return templates.TemplateResponse(template, context)
 
 

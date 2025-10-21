@@ -2,6 +2,8 @@ header {
     width: 100%;
     background-color: #30336b;
 }
+
+div.menu > div.uk-navbar-right {gap: 20px;}
 header .header nav.nav-container {
     height: 70px;
     max-width: 1180px;

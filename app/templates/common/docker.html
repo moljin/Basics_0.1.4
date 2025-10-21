@@ -18,8 +18,14 @@
                 <div><a href="https://www.oofbird.me/121" target="_blank">[Ubuntu] docker 설치 - 24.04 LTS</a></div>
                 <div><a href="https://velog.io/@mag000225/Docker-Ubuntu-24.04%EC%97%90-Docker-%EC%84%A4%EC%B9%98" target="_blank">[Docker] Ubuntu 24.04에 Docker 설치</a></div>
                 <hr>
-                <div>***j** : p**ta*****@*8****</div>
-                <div><a href="http://172.30.1.17:50009/#!/home" target="_blank">http://172.30.1.17:50009/#!/home</a></div>
+                {% if current_user %}
+                    {% if admin %}
+                        <div>PORTAINER.IO : ***j** : p**t*****@*8****</div>
+                        <div><a href="http://172.30.1.17:50009/#!/home" target="_blank">http://172.30.1.17:50009/#!/home</a></div>
+
+                        <div><img src="{{ STATIC_URL }}/media/default/server/container.png" alt=""></div>
+                    {% endif %}
+                {% endif %}
 
             </div>
 

@@ -13,9 +13,14 @@
             <div>
                 <h4>서버구축 진행순서</h4>
                 <p>1. Linux ubuntu 20.04.5 LTS 설치</p>
-                <div>ubuntu server: ***j** : y****8****</div>
-                <div>iptime 공유기: ***j** : i*t***@*8****</div>
-                <div>KT공유기 <a href="http://172.30.1.254" target="_blank"> http://172.30.1.254 </a> PC에서 로그인/ID, PW 변경완료 : ***j** : kt***j**@*8****</div>
+                {% if current_user %}
+                    {% if admin %}
+                        <div>ubuntu server: ***j** : y****8****</div>
+                        <div>iptime 공유기: ***j** : i*t***@*8****</div>
+                        <div><strong><a href="http://172.30.1.254" target="_blank">KT공유기 (http://172.30.1.254)</a></strong> PC에서 로그인/ID, PW 변경완료 : ***j** : kt***j**@*8****</div>
+                        <div>PORTAINER.IO : ***j** : p**t*****@*8****</div>
+                    {% endif %}
+                {% endif %}
                 <hr>
                 <a href="https://es2sun.tistory.com/242" target="_blank">[Ubuntu] 홈 서버 구축 - (0)Ubuntu 18.04 Server 부팅 USB 만들기</a> <br>
                 <a href="https://heroeswillnotdie.tistory.com/22" target="_blank">20.04 LTS server 설치-1</a><br>
@@ -57,17 +62,30 @@
                 sudo ufw delete allow 80<br>
                 sudo ufw delete deny 80<br>
                 sudo ufw status<br><br>
-                <div>예산: ssh moljin@112.166.186.238 -p 52022</div>
+                {% if current_user %}
+                    {% if admin %}
+                        <div>예산: ssh moljin@112.166.186.238 -p 52022</div>
+                    {% endif %}
+                {% endif %}
                 <div>우분투 터미널 창에서 포트를 열어주는 것은 내부 IP(192.168.0.3) 포트를 여는 것이다.</div>
                 <div>터미널에서 여는 내부IP 포트는 외부IP포트와 포워딩시켜줘야 한다. iptime 공유기의 외부 IP(112.166.186.238)에 포트포워딩</div>
-                <div><img src="{{ STATIC_URL }}/media/default/server/port_ftp.jpg" alt=""></div>
+
+                {% if current_user %}
+                    {% if admin %}
+                        <div><img src="{{ STATIC_URL }}/media/default/server/port_ftp.jpg" alt=""></div>
+                    {% endif %}
+                {% endif %}
+
                 KT공유기 로그인(ktuser/homehub)하고 난후, ID, 비밀번호 변경하는 페이지가 나온다. PC나 아이폰으로 로그인하더라도, 어떻게 입력해도 변경이 안되더라...<br>
-                그래서, 결국은 핸드폰으로 로그인하고, 172.30.1.254로 후진한다. 그러면 KT WiFi home 설정화면이 나온다. 여기서부터 그림데로,,,, <br>
+                그래서, 결국은 핸드폰으로 로그인하고, <strong><a href="http://172.30.1.254" target="_blank">http://172.30.1.254</a></strong>로 후진한다. 그러면 KT WiFi home 설정화면이 나온다. 여기서부터 그림데로,,,, <br>
                 그리고, 내부 IP 주소는, ubuntu 서버에 ifconfig 해서 확인(172.30.1.17)하면 된다.<br>
                 <p><a href="https://atnbt.com/%EC%BC%80%EC%9D%B4%ED%8B%B0-%EA%B3%B5%EC%9C%A0%EA%B8%B0-%ED%8F%AC%ED%8A%B8%ED%8F%AC%EC%9B%8C%EB%94%A9/#google_vignette" target="_blank">KT (케이티) 공유기 포트포워딩
                     설정하기</a></p>
-
-                <p><img src="{{ STATIC_URL }}/media/default/server/KT_SSH.png" alt=""></p>
+                {% if current_user %}
+                    {% if admin %}
+                        <p><img src="{{ STATIC_URL }}/media/default/server/KT_SSH.png" alt=""></p>
+                    {% endif %}
+                {% endif %}
 
 
                 <p>port 순서: </p>
