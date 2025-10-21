@@ -50,11 +50,11 @@ ALGORITHM = "HS256"
 #
 # ARTICLE_QUILLS_USER_IMG_UPLOAD_DIR = os.path.join(STATIC_DIR, os.getenv("ARTICLE_QUILLS_USER_IMG_DIR"))
 # ARTICLE_QUILLS_USER_VIDEO_UPLOAD_DIR = os.path.join(STATIC_DIR, os.getenv("ARTICLE_QUILLS_USER_VIDEO_DIR"))
-PROFILE_IMAGE_UPLOAD_DIR = os.path.join(STATIC_DIR, f"media\\user_images\\accounts\\profiles")
-ARTICLE_THUMBNAIL_UPLOAD_DIR = os.path.join(STATIC_DIR, f"media\\user_images\\articles\\thumbnails")
+PROFILE_IMAGE_UPLOAD_DIR = os.path.join(STATIC_DIR, "media"+"/"+"user_images"+"/"+"accounts"+"/"+"profiles")
+ARTICLE_THUMBNAIL_UPLOAD_DIR = os.path.join(STATIC_DIR, "media"+"/"+"user_images"+"/"+"articles"+"/"+"thumbnails")
 
-ARTICLE_QUILLS_USER_IMG_UPLOAD_DIR = os.path.join(STATIC_DIR, f"media\\user_images\\articles\\quills")
-ARTICLE_QUILLS_USER_VIDEO_UPLOAD_DIR = os.path.join(STATIC_DIR, f"media\\user_videos\\articles\\quills")
+ARTICLE_QUILLS_USER_IMG_UPLOAD_DIR = os.path.join(STATIC_DIR, "media"+"/"+"user_images"+"/"+"articles"+"/"+"quills")
+ARTICLE_QUILLS_USER_VIDEO_UPLOAD_DIR = os.path.join(STATIC_DIR, "media"+"/"+"user_videos"+"/"+"articles"+"/"+"quills")
 
 # 생성할 디렉토리 경로 목록
 directory_list = [
@@ -161,6 +161,6 @@ print("NOW_TIME: ", NOW_TIME)
 
 LOTTO_LATEST_URL = os.getenv("LOTTO_LATEST_URL")
 # LOTTO_FILEPATH = os.path.join(STATIC_DIR, os.getenv("LOTTO_FILEPATH"))# STATIC_DIR + os.getenv("LOTTO_FILEPATH")
-LOTTO_FILEPATH = os.path.join(STATIC_DIR, f'media\\default\\lotto_init.xlsx')# STATIC_DIR + os.getenv("LOTTO_FILEPATH")
+LOTTO_FILEPATH = os.path.join(STATIC_DIR, "media"+"/"+"default"+"/"+"lotto_init.xlsx") # STATIC_DIR + os.getenv("LOTTO_FILEPATH")
 print("LOTTO_FILEPATH: ", LOTTO_FILEPATH)
 ADMINS = [os.getenv("ADMIN_1"), os.getenv("ADMIN_2")]

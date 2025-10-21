@@ -32,7 +32,7 @@ async def file_renaming(username:str, ext:str):
 async def upload_single_image(path:str, user: User, imagefile: UploadFile = None):
     try:
         print("upload_single_image path: ", path)
-        upload_dir = f"{path}\\{user.id}\\"
+        upload_dir = f"{path}"+"/"+f"{user.id}"+"/"
         url = await file_write_return_url(upload_dir, user, imagefile, "static", _type="image")
         print("upload_single_image url: ", url)
         return url
