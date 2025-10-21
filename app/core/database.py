@@ -9,6 +9,11 @@ config = get_config()
 print(f"config.DEBUG: {config.DEBUG}")
 # DATABASE_URL = "sqlite+aiosqlite:///./sql_app.db" # # 또는 config.APPLIED_DB # SQLite 비동기 드라이버 사용
 DATABASE_URL = f"{config.DB_TYPE}+{config.DB_DRIVER}://{config.DB_USER}:{config.DB_PASSWORD}@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}?charset=utf8"
+print(f"config.DB_HOST: {config.DB_HOST}")
+print(f"config.DB_PORT: {config.DB_PORT}")
+print(f"config.DB_USER: {config.DB_USER}")
+print(f"config.DB_PASSWORD: {config.DB_PASSWORD}")
+print(f"DATABASE_URL: {DATABASE_URL}")
 
 ASYNC_ENGINE = create_async_engine(DATABASE_URL,
                                    echo=config.DEBUG,
