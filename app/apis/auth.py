@@ -50,13 +50,18 @@ async def login(response: Response, request: Request,
     login_url = "/accounts/login"
     register_url = "/accounts/register"
     update_url = "/accounts/account/update/"+str(user.id)
+    print("parsed_path: ", parsed_path)
+    print("login_url: ", login_url)
+
+    # 요청 정보로 HTTPS 여부 판별 (프록시가 있다면 x-forwarded-proto 우선)
+    is_https = (request.headers.get("x-forwarded-proto") or request.url.scheme) == "https"
 
     if parsed_path == login_url or register_url or update_url:
         response.set_cookie(
             key=ACCESS_COOKIE_NAME,
             value=_access_token,
             httponly=True,
-            secure=True,  # HTTPS 환경 권장
+            secure=is_https,  # HTTPS 환경 권장
             samesite="lax",
             max_age=ACCESS_COOKIE_MAX_AGE,
 
@@ -66,7 +71,7 @@ async def login(response: Response, request: Request,
             key=REFRESH_COOKIE_NAME,
             value=_refresh_token,
             httponly=True,  # JavaScript에서 쿠키에 접근 불가능하도록 설정
-            secure=True,  # HTTPS 환경에서만 쿠키 전송
+            secure=is_https,  # HTTPS 환경에서만 쿠키 전송
             samesite="strict",  # CSRF 공격 방지
             expires = REFRESH_COOKIE_EXPIRE
         )
