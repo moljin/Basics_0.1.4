@@ -334,6 +334,7 @@ app/templates/accounts/update_auth_not_use.html
 app/templates/articles/articles_old.html
 app/templates/sample.html
 app/templates/test.html
+app/utils/middleware_old.py
 lotto_data
 requirement.txt
 git_memo.txt

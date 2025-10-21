@@ -19,6 +19,7 @@ from app.lottos.models import LottoNum, STATUS
 from app.lottos.utils import extract_latest_round, extract_first_win_num, latest_lotto, extract_frequent_num, excell2lotto_list
 from app.models import User
 from app.utils.exc_handler import CustomErrorException
+from app.utils.user import is_admin
 
 router = APIRouter()
 
@@ -111,9 +112,6 @@ async def random_lotto(request: Request,
                        current_user: Optional[User] = Depends(get_optional_current_user)):
 
     old_latest = await latest_lotto(db)
-    admin = False
-    if current_user.username in ADMINS:
-        admin = True
 
     if old_latest:
         latest_round_num = old_latest.latest_round_num
@@ -124,7 +122,7 @@ async def random_lotto(request: Request,
                            "latest": int(latest_round_num),
                            "message": message,
                            'current_user': current_user,
-                           'admin': admin}
+                           'admin': is_admin(current_user)}
                 return templates.TemplateResponse(
                     request=request,
                     name="lottos/lotto.html",
@@ -136,7 +134,7 @@ async def random_lotto(request: Request,
                            "latest": int(latest_round_num),
                            "message": message,
                            'current_user': current_user,
-                           'admin': admin}
+                           'admin': is_admin(current_user)}
                 return templates.TemplateResponse(
                     request=request,
                     name="lottos/lotto.html",
@@ -151,7 +149,7 @@ async def random_lotto(request: Request,
                            "latest": int(latest_round_num),
                            "message": message,
                            'current_user': current_user,
-                           'admin': admin}
+                           'admin': is_admin(current_user)}
                 return templates.TemplateResponse(
                     request=request,
                     name="lottos/lotto.html",
@@ -163,7 +161,7 @@ async def random_lotto(request: Request,
                    "latest": latest_round_num,
                    "message": message,
                    'current_user': current_user,
-                   'admin': admin}
+                   'admin': is_admin(current_user)}
         return templates.TemplateResponse(
             request=request,
             name="lottos/lotto.html",
@@ -175,7 +173,7 @@ async def random_lotto(request: Request,
                    "latest": "0000",
                    "message": message,
                    'current_user': current_user,
-                   'admin': admin}
+                   'admin': is_admin(current_user)}
         return templates.TemplateResponse(
             request=request,
             name="lottos/lotto.html",

@@ -3,6 +3,8 @@ import asyncio
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 
+from app.core.settings import ADMINS
+from app.models import User
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -32,3 +34,13 @@ def optimal_password(password: str):
         #     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         #     detail="비밀번호는 알파벳, 특수문자와 숫자를 모두 포함한 9자리 이상이어야 합니다.",
         # )
+
+def is_admin(current_user: User) -> bool:
+    try:
+        if current_user.username in ADMINS:
+            return True
+        else:
+            return False
+    except Exception as e:
+        print("is_admin False error: ", e, f"==> False")
+        return False

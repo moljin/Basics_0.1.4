@@ -10,6 +10,7 @@ from fastapi import APIRouter, Request, Depends
 from app.core.settings import templates, ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME, ADMINS
 from app.dependencies.auth import get_optional_current_user
 from app.models import User
+from app.utils.user import is_admin
 
 router = APIRouter()
 
@@ -32,10 +33,6 @@ async def get_index(request: Request,
     refresh_token = request.cookies.get(REFRESH_COOKIE_NAME)
     print("get_root refresh_token:", refresh_token)
 
-    admin = False
-    if current_user.username in ADMINS:
-        admin = True
-
     template = "common/index.html"
     context = {'request': request,
                "title": "Hello World!!!",
@@ -45,7 +42,7 @@ async def get_index(request: Request,
                "refresh_token": refresh_token,
                "csrf_token": csrf_token,
                'current_user': current_user,
-               'admin': admin}
+               'admin': is_admin(current_user)}
     return templates.TemplateResponse(template, context)
 
 
