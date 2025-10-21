@@ -14,7 +14,7 @@ router = APIRouter()
 async def quill_upload_image(quillsimage: UploadFile,
                              current_user: User = Depends(get_current_user)):
     try:
-        upload_dir = f'{ARTICLE_QUILLS_USER_IMG_UPLOAD_DIR}\\{current_user.id}\\'
+        upload_dir = f'{ARTICLE_QUILLS_USER_IMG_UPLOAD_DIR}'+'/'+f'{current_user.id}'+'/'
         url = await file_write_return_url(upload_dir, current_user, quillsimage, "app",_type="image")
         return {"url": url}
 
@@ -28,7 +28,7 @@ async def quill_upload_image(quillsimage: UploadFile,
 async def quill_upload_video(quillsvideo: UploadFile = File(...),
                              current_user: User = Depends(get_current_user)):
     try:
-        upload_dir = f'{ARTICLE_QUILLS_USER_VIDEO_UPLOAD_DIR}\\{current_user.id}\\'
+        upload_dir = f'{ARTICLE_QUILLS_USER_VIDEO_UPLOAD_DIR}'+'/'+f'{current_user.id}'+'/'
         url = await file_write_return_url(upload_dir, current_user, quillsvideo, "app", _type="video")
         return {"url": url}
     except Exception as e:
