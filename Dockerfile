@@ -35,4 +35,4 @@ WORKDIR /home/moljin/Basics_0.1.4
 
 # gunicorn -w 9 uvicorn.workers.UvicornWorker main:app
 # gunicorn --bind unix:/tmp/myapi.sock main:app --worker-class uvicorn.workers.UvicornWorker
-녀애CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "9", "--bind", "unix:/tmp/myapi.sock", "-b", "0.0.0.0:8000", "main:app"]
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "9", "--bind", "unix:/tmp/myapi.sock", "-b", "0.0.0.0:8000", "main:app"]
