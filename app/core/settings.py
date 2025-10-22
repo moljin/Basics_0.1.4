@@ -11,8 +11,8 @@ from pydantic import SecretStr, EmailStr, TypeAdapter
 # Load .env
 load_dotenv()
 
-# APP_ENV = "development"
-APP_ENV = "production"
+APP_ENV = "development"
+# APP_ENV = "production"
 APP_NAME = "Develop_FastAPI"
 APP_VERSION = "0.1.4"
 APP_DESCRIPTION = "인프런 강의를 종합한 첫번째 프로젝트"

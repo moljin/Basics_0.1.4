@@ -341,5 +341,4 @@ requirement.txt
 git_memo.txt
 
 # .env는 빌드 컨텍스트에 포함
-!.env
 nginx
