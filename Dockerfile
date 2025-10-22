@@ -33,6 +33,6 @@ WORKDIR /home/moljin/Basics_0.1.4
 # --host 0.0.0.0 : 컨테이너 외부에서의 접속을 허용하기 위해 필수!
 #CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
-# gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
-# gunicorn -w 9 -k --bind unix:/tmp/myapi.sock main:app --worker-class uvicorn.workers.UvicornWorker
-CMD ["gunicorn", "-w", "9", "-k", "--bind", "unix:/tmp/myapi.sock", "main:app", "--worker-class", "uvicorn.workers.UvicornWorker", "0.0.0.0", "--port", "8000"]
+# gunicorn -w 9 uvicorn.workers.UvicornWorker main:app
+# gunicorn --bind unix:/tmp/myapi.sock main:app --worker-class uvicorn.workers.UvicornWorker
+CMD ["gunicorn", "--bind", "unix:/tmp/myapi.sock", "main:app", "--worker-class", "-k", "uvicorn.workers.UvicornWorker", "-w", "9", "--host", "0.0.0.0", "--port", "8000"]
