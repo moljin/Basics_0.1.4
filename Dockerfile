@@ -31,4 +31,8 @@ WORKDIR /home/moljin/Basics_0.1.4
 # 7. 실행 명령 설정 (CMD)
 # 컨테이너 시작 시 실행될 기본 명령어. Uvicorn 서버 실행.
 # --host 0.0.0.0 : 컨테이너 외부에서의 접속을 허용하기 위해 필수!
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
+# gunicorn -w 9 -k --bind unix:/tmp/myapi.sock main:app --worker-class uvicorn.workers.UvicornWorker
+CMD ["gunicorn", "-w", "9", "-k", "--bind", "unix:/tmp/myapi.sock", "main:app", "--worker-class", "uvicorn.workers.UvicornWorker", "0.0.0.0", "--port", "8000"]
