@@ -78,7 +78,7 @@ async def get_user__by_id(request: Request, user_id: int,
     from app.utils.exc_handler import CustomErrorException
     if current_user is None:
         if not user or user:
-            raise CustomErrorException(status_code=403, detail="로그인하지 않지 않았습니다.")
+            raise CustomErrorException(status_code=403, detail="로그인하지 않았습니다.")
     else:
         if current_user.id != user_id or not user:
             raise CustomErrorException(status_code=403, detail="접근권한이 없습니다.")
@@ -99,7 +99,7 @@ async def user_update_ui(request: Request, user_id: int,
     from app.utils.exc_handler import CustomErrorException
     if current_user is None:
         if not user or user:
-            raise CustomErrorException(status_code=403, detail="로그인하지 않지 않았습니다.")
+            raise CustomErrorException(status_code=403, detail="로그인하지 않았습니다.")
     else:
         if current_user.id != user_id or not user:
             raise CustomErrorException(status_code=403, detail="접근권한이 없습니다.")
@@ -119,7 +119,7 @@ async def update_username(request: Request, user_id: int,
     from app.utils.exc_handler import CustomErrorException
     if current_user is None:
         if not user or user:
-            raise CustomErrorException(status_code=403, detail="로그인하지 않지 않았습니다.")
+            raise CustomErrorException(status_code=403, detail="로그인하지 않았습니다.")
     else:
         if current_user.id != user_id or not user:
             raise CustomErrorException(status_code=403, detail="접근권한이 없습니다.")
@@ -141,7 +141,7 @@ async def update_user_email(request: Request, user_id: int,
     from app.utils.exc_handler import CustomErrorException
     if current_user is None:
         if not user or user:
-            raise CustomErrorException(status_code=403, detail="로그인하지 않지 않았습니다.")
+            raise CustomErrorException(status_code=403, detail="로그인하지 않았습니다.")
     else:
         if current_user.id != user_id or not user:
             raise CustomErrorException(status_code=403, detail="접근권한이 없습니다.")
@@ -162,7 +162,7 @@ async def update_user_image(request: Request, user_id: int,
     from app.utils.exc_handler import CustomErrorException
     if current_user is None:
         if not user or user:
-            raise CustomErrorException(status_code=403, detail="로그인하지 않지 않았습니다.")
+            raise CustomErrorException(status_code=403, detail="로그인하지 않았습니다.")
     else:
         if current_user.id != user_id or not user:
             raise CustomErrorException(status_code=403, detail="접근권한이 없습니다.")
@@ -184,7 +184,7 @@ async def update_user_password(request: Request, user_id: int,
     from app.utils.exc_handler import CustomErrorException
     if current_user is None:
         if not user or user:
-            raise CustomErrorException(status_code=403, detail="로그인하지 않지 않았습니다.")
+            raise CustomErrorException(status_code=403, detail="로그인하지 않았습니다.")
     else:
         if current_user.id != user_id or not user:
             raise CustomErrorException(status_code=403, detail="접근권한이 없습니다.")

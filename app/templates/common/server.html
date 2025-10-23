@@ -124,6 +124,7 @@
 
                 docker volume create portainer_data <br>
                 docker run -d -p 50009:9000 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latest <br>
+                docker run -d -p 50009:9000 --name portainer --restart=always --privileged -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latest <br>
                 docker restart portainer<br><br>
 
                 docker swarm init <br><br>
@@ -157,12 +158,14 @@
                 pip freeze > requirements.txt <br>
                 pip freeze > flask_www/requirements.txt<br>
                 <hr>
+                <p><img src="{{ STATIC_URL }}/media/default/server/fastapi_tree.jpg" alt=""></p>
                 <p>5. stack 빌드 후에 받드시 db migrate!!!</p>
                 <p>docker exec -it [flask app container ID] /bin/bash 로 플라스크 앱 컨테이너 내로 진입</p>
                 <p>flask db init ===> flask db migrate ===> flask db upgrade 시행</p>
                 (위와 같은 명령: docker exec [app 혹은 container ID] flask db init/migrate/upgrade)<br><br>
                 docker logs -t flask_www(app 혹은 container ID)<br>
                 docker logs -tf flask_www(app 혹은 container ID)<br>
+                <hr>
 
                 <p></p>
                 <p></p>
